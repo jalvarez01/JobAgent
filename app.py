@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from src.agents.vacantes_pdf import pdf_to_vacantes_df, save_vacantes_csv
+from src.agents.recomendacion_agent import recomendar_vacantes_desde_df
 
 st.title("Bienvenido a JobAgent")
 
@@ -67,3 +68,38 @@ if df is not None and len(df) > 0:
 
 else:
     st.info("Aún no hay vacantes cargadas. Sube un PDF y cárgalas primero.")
+
+st.header("Vacantes recomendadas")
+
+df = st.session_state.get("vacantes_df")
+if df is None:
+    csv_path = Path("data/vacantes.csv")
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+
+if df is not None and len(df) > 0:
+    st.caption("Ingresa tus skills y verás recomendaciones basadas en coincidencias con los requisitos.")
+
+    # Input simple (puedes cambiarlo a multiselect si quieres)
+    skills_raw = st.text_input("Tus skills (separadas por coma)", value="python, sql")
+    perfil_skills = [s.strip() for s in skills_raw.split(",") if s.strip()]
+
+    if st.button("Generar recomendaciones"):
+        rec_df = recomendar_vacantes_desde_df(perfil_skills, df)
+
+        if len(rec_df) == 0:
+            st.info("No hay recomendaciones para mostrar.")
+        else:
+            st.subheader("Ranking (mayor score = más match)")
+            st.dataframe(
+                rec_df[["id", "titulo", "empresa", "ubicacion", "modalidad", "score"]],
+                width="stretch"
+            )
+
+            top = rec_df.iloc[0]
+            st.markdown("### Mejor recomendación")
+            st.markdown(f"**#{top['id']} - {top['titulo']} ({top['empresa']})**")
+            st.write(f"Score: {top['score']}")
+            st.write(top["descripcion"])
+else:
+    st.info("Primero carga vacantes desde el PDF para poder recomendar.")
