@@ -1,0 +1,24 @@
+id,titulo,empresa,ubicacion,modalidad,descripcion,requisitos,url
+1,Practicante Backend,Fintech X,Medellín,Híbrido,"Apoyar el desarrollo de APIs, pruebas
+
+básicas y consultas a bases de datos.","Python; SQL; Git; REST
+
+APIs",https://example.com/vacante/1
+2,Junior Software Engineer,Startup Y,Remoto,Remoto,"Desarrollar nuevas funcionalidades,
+
+corregir bugs y mantener servicios en producción.","Python; Docker; Linux; Inglés
+
+B2",https://example.com/vacante/2
+3,Data Analyst Intern,Retail Z,Bogotá,Presencial,"Apoyar análisis de datos de ventas,
+
+limpieza de datasets y dashboards.","Excel; SQL; Power BI; Estadística
+
+básica",https://example.com/vacante/3
+4,QA Tester Junior,TechLab,Medellín,Híbrido,"Ejecutar casos de prueba, reportar
+
+incidencias y apoyar automatización simple.","Testing; Postman; Git; Atención al
+
+detalle",https://example.com/vacante/4
+5,DevOps Trainee,CloudCo,Cali,Remoto,"Apoyar pipelines CI/CD, monitoreo y despliegues
+
+controlados.",Linux; Git; Docker; CI/CD básico,https://example.com/vacante/5
