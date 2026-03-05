@@ -1,0 +1,6 @@
+langchain-core
+langchain-groq
+langchain-community
+langchain-pymupdf4llm
+docx2txt
+python-dotenv
