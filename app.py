@@ -4,21 +4,51 @@ from pathlib import Path
 import pandas as pd
 from src.agents.vacantes_pdf import pdf_to_vacantes_df, save_vacantes_csv
 from src.agents.recomendacion_agent import recomendar_vacantes_desde_df
+from src.agents.cargar import load_document
+from src.agents.analizar import analizar_cv
 
 st.title("Bienvenido a JobAgent")
 
+# Postulante sube su hoja de vida
 uploaded = st.file_uploader(
-    "Sube un PDF con vacantes. Debe seguir esta estrutura: id,titulo,empresa,ubicacion,modalidad,descripcion,requisitos,url",
-    type=["pdf"]
+    "Sube tu hoja de vida (pdf o docx)",
+    type=["pdf", "docx"]
 )
 
 if uploaded is not None:
-    # Streamlit da el archivo como bytes en memoria, no como ruta real  [oai_citation:1‡Streamlit](https://discuss.streamlit.io/t/uploading-a-csv-file-using-file-uploader/27227?utm_source=chatgpt.com)
+    nombre = uploaded.name
+
     uploads_dir = Path("data/uploads")
     uploads_dir.mkdir(parents=True, exist_ok=True)
 
-    pdf_path = uploads_dir / "vacantes.pdf"
-    pdf_path.write_bytes(uploaded.getvalue())
+    file_path = uploads_dir / nombre
+    file_path.write_bytes(uploaded.getvalue())
+
+    res = load_document(file_path)
+    st.success("\n Proceso exitoso")       # Historia de usuario 1, check
+    
+    if st.button("Solicitar analisis"):
+        try: 
+            resultado = analizar_cv(res)
+            st.write(resultado)
+
+            resultados_dir = Path("storage")
+            resultados_dir.mkdir(parents=True, exist_ok=True)
+
+            archivos = list(resultados_dir.glob("analisis_*.txt"))
+            contador = len(archivos) + 1
+
+            file_path = resultados_dir / f"analisis_{contador}.txt"
+            file_path.write_text(resultado, encoding="utf-8")
+            
+        except Exception as e:
+            st.error(f"Error analizando el cv: {e}") 
+
+
+
+"""
+    # Streamlit da el archivo como bytes en memoria, no como ruta real  [oai_citation:1‡Streamlit](https://discuss.streamlit.io/t/uploading-a-csv-file-using-file-uploader/27227?utm_source=chatgpt.com)
+
 
     st.success(f"PDF guardado en: {pdf_path}")
 
@@ -102,4 +132,4 @@ if df is not None and len(df) > 0:
             st.write(f"Score: {top['score']}")
             st.write(top["descripcion"])
 else:
-    st.info("Primero carga vacantes desde el PDF para poder recomendar.")
+    st.info("Primero carga vacantes desde el PDF para poder recomendar.")"""
