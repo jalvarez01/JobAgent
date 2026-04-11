@@ -1,0 +1,66 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+venv/
+env/
+backend/venv/
+.env
+.env.*
+
+# FastAPI data
+data/
+storage/
+
+# Frontend (React / Vite)
+node_modules/
+dist/
+build/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache / test
+.pytest_cache/
+.mypy_cache/
+.coverage
