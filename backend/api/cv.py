@@ -3,18 +3,13 @@ from pathlib import Path
 from uuid import uuid4
 from pydantic import BaseModel
 
+from backend.config import UPLOAD_DIR, STORAGE_DIR
 from backend.domain.agents.cargar import load_document
-from backend.domain.agents.analizar import analizar_cv
+from backend.domain.agents.analizar import analizar_cv, analizar_cv_estructurado
 
 router = APIRouter()
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx"}
-
-UPLOAD_DIR = Path("data/uploads")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-RESULT_DIR = Path("storage")
-RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class AnalizarRequest(BaseModel):
@@ -48,7 +43,21 @@ async def analizar(body: AnalizarRequest):
 
     resultado = analizar_cv(body.texto)
 
-    out_path = RESULT_DIR / f"analisis_{uuid4().hex}.txt"
+    out_path = STORAGE_DIR / f"analisis_{uuid4().hex}.txt"
     out_path.write_text(resultado, encoding="utf-8")
+
+    return {"resultado": resultado}
+
+
+@router.post("/analizar-estructurado")
+async def analizar_estructurado(body: AnalizarRequest):
+    """Analiza el CV y devuelve datos estructurados para pre-llenar el perfil."""
+    if not body.texto.strip():
+        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+
+    resultado = analizar_cv_estructurado(body.texto)
+
+    if "error" in resultado and "raw" not in resultado:
+        raise HTTPException(status_code=503, detail=resultado["error"])
 
     return {"resultado": resultado}
