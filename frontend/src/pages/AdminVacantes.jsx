@@ -1,251 +1,118 @@
 import { useState, useEffect } from "react"
-import {
-  listarTodasVacantes,
-  crearVacante,
-  actualizarVacante,
-  eliminarVacante,
-} from "../api/vacantes"
+import { listarTodasVacantes, crearVacante, actualizarVacante, eliminarVacante } from "../api/vacantes"
 
 const MODALIDADES = [
-  { value: "", label: "Seleccionar..." },
-  { value: "presencial", label: "Presencial" },
-  { value: "remoto", label: "Remoto" },
-  { value: "hibrido", label: "Híbrido" },
+  { value: "", label: "Seleccionar..." }, { value: "presencial", label: "Presencial" },
+  { value: "remoto", label: "Remoto" }, { value: "hibrido", label: "Híbrido" },
 ]
-
 const ESTADOS = [
-  { value: "activa", label: "Activa" },
-  { value: "cerrada", label: "Cerrada" },
-  { value: "pausada", label: "Pausada" },
+  { value: "activa", label: "Activa" }, { value: "cerrada", label: "Cerrada" }, { value: "pausada", label: "Pausada" },
 ]
-
-const FORM_VACIO = {
-  titulo: "",
-  empresa: "",
-  ubicacion: "",
-  modalidad: "",
-  salario_min: "",
-  salario_max: "",
-  descripcion: "",
-  requisitos: "",
-  url: "",
-  estado: "activa",
-}
+const FORM_VACIO = { titulo: "", empresa: "", ubicacion: "", modalidad: "", salario_min: "", salario_max: "", descripcion: "", requisitos: "", url: "", estado: "activa" }
 
 export default function AdminVacantes({ onVolver }) {
   const [vacantes, setVacantes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [vista, setVista] = useState("lista") // "lista" | "form"
+  const [vista, setVista] = useState("lista")
   const [editandoId, setEditandoId] = useState(null)
   const [form, setForm] = useState({ ...FORM_VACIO })
   const [error, setError] = useState("")
   const [mensaje, setMensaje] = useState("")
   const [busqueda, setBusqueda] = useState("")
 
-  useEffect(() => {
-    cargarVacantes()
-  }, [])
+  useEffect(() => { cargar() }, [])
 
-  const cargarVacantes = async () => {
+  const cargar = async () => {
     setLoading(true)
-    try {
-      const data = await listarTodasVacantes()
-      setVacantes(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    try { setVacantes(await listarTodasVacantes()) }
+    catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  const handleNueva = () => {
-    setForm({ ...FORM_VACIO })
-    setEditandoId(null)
-    setError("")
-    setMensaje("")
-    setVista("form")
-  }
+  const handleNueva = () => { setForm({ ...FORM_VACIO }); setEditandoId(null); setError(""); setMensaje(""); setVista("form") }
 
-  const handleEditar = (vacante) => {
-    setForm({
-      titulo: vacante.titulo || "",
-      empresa: vacante.empresa || "",
-      ubicacion: vacante.ubicacion || "",
-      modalidad: vacante.modalidad || "",
-      salario_min: vacante.salario_min ?? "",
-      salario_max: vacante.salario_max ?? "",
-      descripcion: vacante.descripcion || "",
-      requisitos: vacante.requisitos || "",
-      url: vacante.url || "",
-      estado: vacante.estado || "activa",
-    })
-    setEditandoId(vacante.id)
-    setError("")
-    setMensaje("")
-    setVista("form")
+  const handleEditar = (v) => {
+    setForm({ titulo: v.titulo||"", empresa: v.empresa||"", ubicacion: v.ubicacion||"", modalidad: v.modalidad||"", salario_min: v.salario_min??"", salario_max: v.salario_max??"", descripcion: v.descripcion||"", requisitos: v.requisitos||"", url: v.url||"", estado: v.estado||"activa" })
+    setEditandoId(v.id); setError(""); setMensaje(""); setVista("form")
   }
 
   const handleEliminar = async (id, titulo) => {
-    if (!confirm(`¿Eliminar la vacante "${titulo}"? Esta acción no se puede deshacer.`)) return
-    try {
-      await eliminarVacante(id)
-      setMensaje("Vacante eliminada")
-      await cargarVacantes()
-    } catch (err) {
-      setError(err.message)
-    }
+    if (!confirm(`¿Eliminar "${titulo}"?`)) return
+    try { await eliminarVacante(id); setMensaje("Eliminada"); await cargar() }
+    catch (err) { setError(err.message) }
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((f) => ({ ...f, [name]: value }))
-  }
+  const handleChange = (e) => { const { name, value } = e.target; setForm((f) => ({ ...f, [name]: value })) }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setMensaje("")
-
-    const payload = {
-      ...form,
-      salario_min: form.salario_min !== "" ? Number(form.salario_min) : null,
-      salario_max: form.salario_max !== "" ? Number(form.salario_max) : null,
-      modalidad: form.modalidad || null,
-      ubicacion: form.ubicacion || null,
-      url: form.url || null,
-    }
-
+    e.preventDefault(); setError(""); setMensaje("")
+    const payload = { ...form, salario_min: form.salario_min !== "" ? Number(form.salario_min) : null, salario_max: form.salario_max !== "" ? Number(form.salario_max) : null, modalidad: form.modalidad || null, ubicacion: form.ubicacion || null, url: form.url || null }
     try {
-      if (editandoId) {
-        await actualizarVacante(editandoId, payload)
-        setMensaje("Vacante actualizada correctamente")
-      } else {
-        await crearVacante(payload)
-        setMensaje("Vacante creada correctamente")
-      }
-      await cargarVacantes()
-      setVista("lista")
-    } catch (err) {
-      setError(err.message)
-    }
+      if (editandoId) { await actualizarVacante(editandoId, payload); setMensaje("Actualizada") }
+      else { await crearVacante(payload); setMensaje("Creada") }
+      await cargar(); setVista("lista")
+    } catch (err) { setError(err.message) }
   }
 
-  const vacantesFiltradas = busqueda
-    ? vacantes.filter(
-        (v) =>
-          v.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-          v.empresa.toLowerCase().includes(busqueda.toLowerCase()) ||
-          (v.requisitos || "").toLowerCase().includes(busqueda.toLowerCase())
-      )
+  const filtradas = busqueda
+    ? vacantes.filter((v) => v.titulo.toLowerCase().includes(busqueda.toLowerCase()) || v.empresa.toLowerCase().includes(busqueda.toLowerCase()) || (v.requisitos||"").toLowerCase().includes(busqueda.toLowerCase()))
     : vacantes
 
-  const formatSalario = (min, max) => {
+  const fmtSalario = (min, max) => {
     if (!min && !max) return "—"
-    const fmt = (n) => `$${Number(n).toLocaleString("es-CO")}`
-    if (min && max) return `${fmt(min)} - ${fmt(max)}`
-    if (min) return `Desde ${fmt(min)}`
-    return `Hasta ${fmt(max)}`
+    const f = (n) => `$${Number(n).toLocaleString("es-CO")}`
+    return min && max ? `${f(min)} - ${f(max)}` : min ? `Desde ${f(min)}` : `Hasta ${f(max)}`
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div style={s.container}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40 }}>
         <div>
-          <h2 style={{ margin: 0 }}>Admin - Vacantes</h2>
-          <p style={styles.subtitle}>{vacantes.length} vacantes registradas</p>
+          <h1 style={s.title}>Administración</h1>
+          <p style={s.subtitle}>{vacantes.length} vacantes registradas</p>
         </div>
-        <div style={styles.headerActions}>
-          {vista === "lista" && (
-            <button onClick={handleNueva} style={styles.btnPrimario}>
-              + Nueva vacante
-            </button>
-          )}
-          <button onClick={onVolver} style={styles.btnSecundario}>
-            ← Volver
-          </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {vista === "lista" && <button onClick={handleNueva} style={s.btnPrimary}>+ Nueva vacante</button>}
+          <button onClick={onVolver} style={s.btnSec}>&#8592; Volver</button>
         </div>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
-      {mensaje && <p style={styles.success}>{mensaje}</p>}
+      {error && <div style={s.error}>{error}</div>}
+      {mensaje && <div style={s.success}>{mensaje}</div>}
 
-      {/* ========== LISTA ========== */}
+      {/* ═══ LISTA ═══ */}
       {vista === "lista" && (
         <div>
-          <input
-            type="text"
-            placeholder="Buscar por título, empresa o requisitos..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            style={styles.searchInput}
-          />
+          <input type="text" placeholder="Buscar por título, empresa o requisitos..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} style={{ marginBottom: 20 }} />
 
           {loading ? (
-            <p style={{ textAlign: "center", color: "#999", padding: 40 }}>
-              Cargando vacantes...
-            </p>
-          ) : vacantesFiltradas.length === 0 ? (
-            <div style={styles.empty}>
-              <p>No hay vacantes{busqueda ? " que coincidan con la búsqueda" : ""}.</p>
-              <button onClick={handleNueva} style={styles.btnPrimario}>
-                Crear la primera vacante
-              </button>
+            <p style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.4)" }}>Cargando...</p>
+          ) : filtradas.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 60 }}>
+              <p>No hay vacantes{busqueda ? " que coincidan" : ""}</p>
+              <button onClick={handleNueva} style={{ ...s.btnPrimary, marginTop: 16 }}>Crear la primera</button>
             </div>
           ) : (
-            <div style={styles.tabla}>
-              <div style={styles.tablaHeader}>
-                <span style={{ flex: 2 }}>Título / Empresa</span>
-                <span style={{ flex: 1 }}>Ubicación</span>
-                <span style={{ flex: 1 }}>Modalidad</span>
-                <span style={{ flex: 1 }}>Salario</span>
-                <span style={{ flex: 1 }}>Estado</span>
-                <span style={{ width: 120, textAlign: "right" }}>Acciones</span>
-              </div>
-              {vacantesFiltradas.map((v) => (
-                <div key={v.id} style={styles.tablaRow}>
-                  <span style={{ flex: 2 }}>
-                    <strong style={{ fontSize: 14, color: "#111827" }}>{v.titulo}</strong>
-                    <br />
-                    <span style={{ fontSize: 12, color: "#6b7280" }}>{v.empresa}</span>
-                  </span>
-                  <span style={{ flex: 1, fontSize: 13, color: "#4b5563" }}>
-                    {v.ubicacion || "—"}
-                  </span>
-                  <span style={{ flex: 1 }}>
-                    {v.modalidad ? (
-                      <span style={styles.modTag}>{v.modalidad}</span>
-                    ) : (
-                      "—"
-                    )}
-                  </span>
-                  <span style={{ flex: 1, fontSize: 12, color: "#4b5563" }}>
-                    {formatSalario(v.salario_min, v.salario_max)}
-                  </span>
-                  <span style={{ flex: 1 }}>
-                    <span
-                      style={{
-                        ...styles.estadoTag,
-                        background: v.estado === "activa" ? "#d1fae5" : "#fee2e2",
-                        color: v.estado === "activa" ? "#065f46" : "#991b1b",
-                      }}
-                    >
-                      {v.estado}
-                    </span>
-                  </span>
-                  <span style={{ width: 120, textAlign: "right", display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                    <button
-                      onClick={() => handleEditar(v)}
-                      style={styles.btnMini}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleEliminar(v.id, v.titulo)}
-                      style={styles.btnMiniDanger}
-                    >
-                      Eliminar
-                    </button>
-                  </span>
+            <div style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+              {filtradas.map((v, i) => (
+                <div key={v.id} style={{ ...s.row, borderBottom: i < filtradas.length - 1 ? "1px solid rgba(255,255,255,0.07)" : "none" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
+                  <div style={{ flex: 2 }}>
+                    <div style={{ fontSize: 14, marginBottom: 2 }}>{v.titulo}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{v.empresa}</div>
+                  </div>
+                  <div style={{ flex: 1, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{v.ubicacion || "—"}</div>
+                  <div style={{ flex: 1 }}>{v.modalidad ? <span style={s.meta}>{v.modalidad}</span> : "—"}</div>
+                  <div style={{ flex: 1, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{fmtSalario(v.salario_min, v.salario_max)}</div>
+                  <div style={{ flex: 0.6 }}>
+                    <span style={{ fontSize: 11, padding: "2px 8px", color: v.estado === "activa" ? "rgba(74,222,128,0.9)" : "rgba(248,113,113,0.8)", border: `1px solid ${v.estado === "activa" ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)"}` }}>{v.estado}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => handleEditar(v)} style={s.btnMini}>Editar</button>
+                    <button onClick={() => handleEliminar(v.id, v.titulo)} style={s.btnMiniDanger}>Eliminar</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -253,163 +120,41 @@ export default function AdminVacantes({ onVolver }) {
         </div>
       )}
 
-      {/* ========== FORMULARIO ========== */}
+      {/* ═══ FORMULARIO ═══ */}
       {vista === "form" && (
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <h3 style={{ margin: "0 0 16px" }}>
-            {editandoId ? "Editar vacante" : "Nueva vacante"}
-          </h3>
+        <form onSubmit={handleSubmit} style={s.formCard}>
+          <h3 style={{ fontSize: 20, marginBottom: 24 }}>{editandoId ? "Editar vacante" : "Nueva vacante"}</h3>
 
-          <div style={styles.grid}>
-            <label style={styles.label}>
-              Título del cargo *
-              <input
-                name="titulo"
-                value={form.titulo}
-                onChange={handleChange}
-                required
-                placeholder="Ej: Desarrollador Backend Python"
-                style={styles.input}
-              />
-            </label>
-            <label style={styles.label}>
-              Empresa *
-              <input
-                name="empresa"
-                value={form.empresa}
-                onChange={handleChange}
-                required
-                placeholder="Ej: Rappi"
-                style={styles.input}
-              />
-            </label>
+          <div style={s.grid2}>
+            <Fld label="Título del cargo *" name="titulo" value={form.titulo} onChange={handleChange} required placeholder="Ej: Desarrollador Backend Python" />
+            <Fld label="Empresa *" name="empresa" value={form.empresa} onChange={handleChange} required placeholder="Ej: Rappi" />
           </div>
-
-          <div style={styles.grid}>
-            <label style={styles.label}>
-              Ubicación
-              <input
-                name="ubicacion"
-                value={form.ubicacion}
-                onChange={handleChange}
-                placeholder="Ej: Medellín"
-                style={styles.input}
-              />
-            </label>
-            <label style={styles.label}>
-              Modalidad
-              <select
-                name="modalidad"
-                value={form.modalidad}
-                onChange={handleChange}
-                style={styles.input}
-              >
-                {MODALIDADES.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
-            </label>
+          <div style={s.grid2}>
+            <Fld label="Ubicación" name="ubicacion" value={form.ubicacion} onChange={handleChange} placeholder="Ej: Medellín" />
+            <div style={s.fieldWrap}><label style={s.label}>Modalidad</label><select name="modalidad" value={form.modalidad} onChange={handleChange}>{MODALIDADES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}</select></div>
           </div>
-
-          <div style={styles.grid}>
-            <label style={styles.label}>
-              Salario mínimo (COP)
-              <input
-                name="salario_min"
-                type="number"
-                min="0"
-                value={form.salario_min}
-                onChange={handleChange}
-                placeholder="Ej: 4000000"
-                style={styles.input}
-              />
-            </label>
-            <label style={styles.label}>
-              Salario máximo (COP)
-              <input
-                name="salario_max"
-                type="number"
-                min="0"
-                value={form.salario_max}
-                onChange={handleChange}
-                placeholder="Ej: 7000000"
-                style={styles.input}
-              />
-            </label>
+          <div style={s.grid2}>
+            <Fld label="Salario mínimo (COP)" name="salario_min" type="number" value={form.salario_min} onChange={handleChange} placeholder="4000000" />
+            <Fld label="Salario máximo (COP)" name="salario_max" type="number" value={form.salario_max} onChange={handleChange} placeholder="7000000" />
           </div>
-
-          <label style={styles.label}>
-            Descripción del cargo
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Describe las responsabilidades y el contexto del puesto..."
-              style={{ ...styles.input, resize: "vertical" }}
-            />
-          </label>
-
-          <label style={styles.label}>
-            Requisitos / Skills
-            <input
-              name="requisitos"
-              value={form.requisitos}
-              onChange={handleChange}
-              placeholder="Separados por ; → Ej: python;fastapi;postgresql;docker"
-              style={styles.input}
-            />
-            <span style={styles.hint}>
-              Separa cada skill con punto y coma (;). Estos se usan para el matching con candidatos.
-            </span>
-          </label>
-
-          {/* Preview de skills */}
+          <div style={s.fieldWrap}><label style={s.label}>Descripción</label><textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows={3} placeholder="Responsabilidades del puesto..." style={{ resize: "vertical" }} /></div>
+          <div style={s.fieldWrap}>
+            <label style={s.label}>Requisitos / Skills</label>
+            <input name="requisitos" value={form.requisitos} onChange={handleChange} placeholder="Separados por ; → python;fastapi;docker" />
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 4, display: "block" }}>Estos skills se usan para el matching con candidatos</span>
+          </div>
           {form.requisitos && (
-            <div style={styles.skillsPreview}>
-              {form.requisitos.split(";").filter(s => s.trim()).map((s) => (
-                <span key={s.trim()} style={styles.skillTag}>{s.trim()}</span>
-              ))}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0 16px" }}>
+              {form.requisitos.split(";").filter(sk => sk.trim()).map((sk) => <span key={sk.trim()} style={s.skillTag}>{sk.trim()}</span>)}
             </div>
           )}
-
-          <div style={styles.grid}>
-            <label style={styles.label}>
-              URL de la oferta
-              <input
-                name="url"
-                value={form.url}
-                onChange={handleChange}
-                placeholder="https://..."
-                style={styles.input}
-              />
-            </label>
-            <label style={styles.label}>
-              Estado
-              <select
-                name="estado"
-                value={form.estado}
-                onChange={handleChange}
-                style={styles.input}
-              >
-                {ESTADOS.map((e) => (
-                  <option key={e.value} value={e.value}>{e.label}</option>
-                ))}
-              </select>
-            </label>
+          <div style={s.grid2}>
+            <Fld label="URL de la oferta" name="url" value={form.url} onChange={handleChange} placeholder="https://..." />
+            <div style={s.fieldWrap}><label style={s.label}>Estado</label><select name="estado" value={form.estado} onChange={handleChange}>{ESTADOS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}</select></div>
           </div>
-
-          <div style={styles.formActions}>
-            <button
-              type="button"
-              onClick={() => { setVista("lista"); setError(""); setMensaje(""); }}
-              style={styles.btnSecundario}
-            >
-              Cancelar
-            </button>
-            <button type="submit" style={styles.btnPrimario}>
-              {editandoId ? "Guardar cambios" : "Crear vacante"}
-            </button>
+          <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
+            <button type="button" onClick={() => { setVista("lista"); setError(""); setMensaje("") }} style={s.btnSec}>Cancelar</button>
+            <button type="submit" style={s.btnPrimary}>{editandoId ? "Guardar cambios" : "Crear vacante"}</button>
           </div>
         </form>
       )}
@@ -417,63 +162,30 @@ export default function AdminVacantes({ onVolver }) {
   )
 }
 
-const styles = {
-  container: { maxWidth: 900, margin: "0 auto", padding: "24px 16px", textAlign: "left" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, flexWrap: "wrap", gap: 10 },
-  subtitle: { fontSize: 13, color: "#6b7280", margin: "4px 0 0" },
-  headerActions: { display: "flex", gap: 8 },
-  error: { color: "#dc2626", background: "#fef2f2", padding: "8px 12px", borderRadius: 6, marginBottom: 12, fontSize: 14 },
-  success: { color: "#065f46", background: "#d1fae5", padding: "8px 12px", borderRadius: 6, marginBottom: 12, fontSize: 14 },
-  searchInput: {
-    width: "100%", padding: "10px 14px", border: "1px solid #d1d5db", borderRadius: 8,
-    fontSize: 14, marginBottom: 16, boxSizing: "border-box",
-  },
-  empty: { textAlign: "center", padding: 40, color: "#6b7280" },
-  tabla: { border: "1px solid #e5e7eb", borderRadius: 10, overflow: "hidden" },
-  tablaHeader: {
-    display: "flex", alignItems: "center", padding: "10px 14px", background: "#f9fafb",
-    borderBottom: "1px solid #e5e7eb", fontSize: 12, fontWeight: 600, color: "#6b7280", gap: 10,
-  },
-  tablaRow: {
-    display: "flex", alignItems: "center", padding: "12px 14px",
-    borderBottom: "1px solid #f3f4f6", gap: 10,
-  },
-  modTag: {
-    fontSize: 11, padding: "2px 8px", borderRadius: 4, background: "#eff6ff", color: "#1d4ed8",
-  },
-  estadoTag: {
-    fontSize: 11, padding: "2px 8px", borderRadius: 10, fontWeight: 600,
-  },
-  btnPrimario: {
-    padding: "10px 20px", background: "#2563eb", color: "#fff", border: "none",
-    borderRadius: 6, cursor: "pointer", fontSize: 14, fontWeight: 500,
-  },
-  btnSecundario: {
-    padding: "8px 16px", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1",
-    borderRadius: 6, cursor: "pointer", fontSize: 13,
-  },
-  btnMini: {
-    fontSize: 12, padding: "4px 10px", background: "#eff6ff", color: "#1d4ed8",
-    border: "none", borderRadius: 4, cursor: "pointer",
-  },
-  btnMiniDanger: {
-    fontSize: 12, padding: "4px 10px", background: "#fef2f2", color: "#dc2626",
-    border: "none", borderRadius: 4, cursor: "pointer",
-  },
-  form: { border: "1px solid #e5e7eb", borderRadius: 10, padding: 24, background: "#fff" },
-  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 },
-  label: {
-    display: "flex", flexDirection: "column", gap: 4, fontSize: 14, fontWeight: 500,
-    color: "#374151", marginBottom: 4,
-  },
-  input: {
-    padding: "8px 10px", border: "1px solid #d1d5db", borderRadius: 6,
-    fontSize: 14, fontWeight: 400, width: "100%", boxSizing: "border-box",
-  },
-  hint: { fontSize: 12, color: "#9ca3af", fontWeight: 400 },
-  skillsPreview: { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 14 },
-  skillTag: {
-    fontSize: 12, color: "#1d4ed8", background: "#eff6ff", padding: "3px 10px", borderRadius: 12,
-  },
-  formActions: { display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" },
+function Fld({ label, name, value, onChange, type = "text", placeholder, required }) {
+  return (
+    <div style={s.fieldWrap}>
+      <label style={s.label}>{label}</label>
+      <input name={name} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} />
+    </div>
+  )
+}
+
+const s = {
+  container: { maxWidth: 960, margin: "0 auto", padding: "40px 24px" },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  subtitle: { fontSize: 14, color: "rgba(255,255,255,0.4)" },
+  error: { color: "#ff6b6b", border: "1px solid rgba(255,100,100,0.2)", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
+  success: { color: "rgba(74,222,128,0.9)", border: "1px solid rgba(74,222,128,0.2)", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
+  row: { display: "flex", alignItems: "center", padding: "14px 16px", gap: 10, transition: "background 0.15s" },
+  meta: { fontSize: 11, padding: "2px 8px", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" },
+  btnPrimary: { padding: "12px 24px", background: "#fff", color: "#000", border: "none", fontSize: 14, cursor: "pointer" },
+  btnSec: { padding: "10px 20px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer" },
+  btnMini: { fontSize: 12, padding: "4px 10px", background: "transparent", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" },
+  btnMiniDanger: { fontSize: 12, padding: "4px 10px", background: "transparent", color: "rgba(248,113,113,0.8)", border: "1px solid rgba(248,113,113,0.2)", cursor: "pointer" },
+  formCard: { border: "1px solid rgba(255,255,255,0.1)", padding: 32 },
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 },
+  fieldWrap: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 4 },
+  label: { fontSize: 13, color: "rgba(255,255,255,0.5)", letterSpacing: "0.02em" },
+  skillTag: { fontSize: 12, padding: "4px 12px", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)" },
 }

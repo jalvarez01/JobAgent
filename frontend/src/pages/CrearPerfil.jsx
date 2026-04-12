@@ -29,22 +29,11 @@ const DISPONIBILIDADES = [
 ]
 
 const INITIAL_FORM = {
-  nombre_completo: "",
-  email: "",
-  telefono: "",
-  ubicacion: "",
-  resumen_profesional: "",
-  nivel_educativo: "",
-  titulo_educativo: "",
-  institucion_educativa: "",
-  experiencia_anos: "",
-  cargo_actual: "",
-  empresa_actual: "",
-  skills: [],
-  aspiracion_salarial_min: "",
-  aspiracion_salarial_max: "",
-  modalidad_preferida: "",
-  disponibilidad: "",
+  nombre_completo: "", email: "", telefono: "", ubicacion: "",
+  resumen_profesional: "", nivel_educativo: "", titulo_educativo: "",
+  institucion_educativa: "", experiencia_anos: "", cargo_actual: "",
+  empresa_actual: "", skills: [], aspiracion_salarial_min: "",
+  aspiracion_salarial_max: "", modalidad_preferida: "", disponibilidad: "",
   cv_texto: "",
 }
 
@@ -57,34 +46,26 @@ export default function CrearPerfil({ onPerfilCreado }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [analisis, setAnalisis] = useState(null)
-
-  // --- Paso 1: Subir y analizar CV ---
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleUploadCV = async () => {
     if (!file) return
-    setLoading(true)
-    setError("")
+    setLoading(true); setError("")
     try {
       const res = await uploadCV(file)
       setCvTexto(res.texto)
       setForm((f) => ({ ...f, cv_texto: res.texto }))
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
   const handleAnalizar = async () => {
     if (!cvTexto.trim()) return
-    setLoading(true)
-    setError("")
+    setLoading(true); setError("")
     try {
       const res = await analizarCVEstructurado(cvTexto)
       const data = res.resultado
       setAnalisis(data)
-
-      // Pre-llenar el formulario con los datos extraídos
       setForm((f) => ({
         ...f,
         nombre_completo: data.nombre_completo || f.nombre_completo,
@@ -100,18 +81,10 @@ export default function CrearPerfil({ onPerfilCreado }) {
         empresa_actual: data.empresa_actual || f.empresa_actual,
         skills: data.skills?.length ? data.skills : f.skills,
       }))
-
       setPaso(2)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
-
-  const handleSkipCV = () => setPaso(2)
-
-  // --- Paso 2: Formulario de perfil ---
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -132,38 +105,27 @@ export default function CrearPerfil({ onPerfilCreado }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError("")
-
+    setLoading(true); setError("")
     try {
       const payload = {
         ...form,
         experiencia_anos: form.experiencia_anos !== "" ? Number(form.experiencia_anos) : null,
-        aspiracion_salarial_min:
-          form.aspiracion_salarial_min !== "" ? Number(form.aspiracion_salarial_min) : null,
-        aspiracion_salarial_max:
-          form.aspiracion_salarial_max !== "" ? Number(form.aspiracion_salarial_max) : null,
+        aspiracion_salarial_min: form.aspiracion_salarial_min !== "" ? Number(form.aspiracion_salarial_min) : null,
+        aspiracion_salarial_max: form.aspiracion_salarial_max !== "" ? Number(form.aspiracion_salarial_max) : null,
         nivel_educativo: form.nivel_educativo || null,
         modalidad_preferida: form.modalidad_preferida || null,
         disponibilidad: form.disponibilidad || null,
       }
-
       const perfil = await crearPerfil(payload)
       if (onPerfilCreado) onPerfilCreado(perfil)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  // --- Cálculo de completitud en tiempo real ---
   const camposCompletitud = [
-    "nombre_completo", "email", "telefono", "ubicacion",
-    "resumen_profesional", "nivel_educativo", "titulo_educativo",
-    "institucion_educativa", "experiencia_anos", "cargo_actual",
-    "skills", "aspiracion_salarial_min", "modalidad_preferida",
-    "disponibilidad",
+    "nombre_completo", "email", "telefono", "ubicacion", "resumen_profesional",
+    "nivel_educativo", "titulo_educativo", "institucion_educativa", "experiencia_anos",
+    "cargo_actual", "skills", "aspiracion_salarial_min", "modalidad_preferida", "disponibilidad",
   ]
   const llenos = camposCompletitud.filter((c) => {
     const v = form[c]
@@ -172,308 +134,188 @@ export default function CrearPerfil({ onPerfilCreado }) {
   const completitud = Math.round((llenos / camposCompletitud.length) * 100)
 
   return (
-    <div style={styles.container}>
-      <h2>Crear perfil profesional</h2>
-
-      {/* Indicador de paso */}
-      <div style={styles.pasos}>
-        <span style={paso === 1 ? styles.pasoActivo : styles.pasoInactivo}>
-          1. Subir CV
-        </span>
-        <span style={{ margin: "0 8px" }}>→</span>
-        <span style={paso === 2 ? styles.pasoActivo : styles.pasoInactivo}>
-          2. Completar perfil
-        </span>
+    <div style={s.container}>
+      {/* Header */}
+      <div style={s.hero}>
+        <h1 style={s.title}>
+          {paso === 1 ? "Sube tu hoja de vida" : "Completa tu perfil"}
+        </h1>
+        <p style={s.subtitle}>
+          {paso === 1
+            ? "Sube tu CV y deja que la IA extraiga tus datos automáticamente"
+            : "Revisa y ajusta la información extraída"}
+        </p>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {/* Steps indicator */}
+      <div style={s.steps}>
+        <span style={paso === 1 ? s.stepActive : s.stepDone}>1. Subir CV</span>
+        <span style={s.stepArrow}>—</span>
+        <span style={paso === 2 ? s.stepActive : s.stepInactive}>2. Perfil</span>
+      </div>
 
-      {/* ========== PASO 1: SUBIR CV ========== */}
+      {error && <div style={s.error}>{error}</div>}
+
+      {/* ═══ PASO 1 ═══ */}
       {paso === 1 && (
         <div>
-          <p style={styles.descripcion}>
-            Sube tu hoja de vida para que la IA extraiga tus datos automáticamente,
-            o salta este paso y llena el formulario manualmente.
-          </p>
-
-          <input
-            type="file"
-            accept=".pdf,.docx"
-            onChange={(e) => setFile(e.target.files[0])}
-            style={styles.fileInput}
-          />
-
-          <div style={styles.botones}>
-            <button onClick={handleUploadCV} disabled={!file || loading} style={styles.btnPrimario}>
-              {loading && !cvTexto ? "Subiendo..." : "Subir CV"}
-            </button>
-
-            {cvTexto && (
-              <button
-                onClick={handleAnalizar}
-                disabled={loading}
-                style={styles.btnPrimario}
-              >
-                {loading ? "Analizando con IA..." : "Analizar y pre-llenar"}
-              </button>
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault(); setIsDragging(false)
+              const f = e.dataTransfer.files[0]
+              if (f) { setFile(f); setCvTexto("") }
+            }}
+            style={{
+              ...s.dropZone,
+              borderColor: isDragging ? "#fff" : file ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.15)",
+              background: isDragging ? "rgba(255,255,255,0.05)" : "transparent",
+            }}
+          >
+            {!file ? (
+              <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>&#8593;</div>
+                <h3 style={{ fontSize: 22, marginBottom: 8 }}>Arrastra tu CV aquí</h3>
+                <p style={s.muted}>o selecciona un archivo PDF / DOCX</p>
+                <label style={s.btnPrimary}>
+                  Seleccionar archivo
+                  <input
+                    type="file" accept=".pdf,.docx"
+                    onChange={(e) => { setFile(e.target.files[0]); setCvTexto("") }}
+                    style={{ display: "none" }}
+                  />
+                </label>
+              </div>
+            ) : (
+              <div style={{ padding: 32 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <div>
+                    <h4 style={{ fontSize: 18, marginBottom: 4 }}>{file.name}</h4>
+                    <p style={s.muted}>{(file.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <span onClick={() => { setFile(null); setCvTexto("") }} style={{ ...s.muted, cursor: "pointer", fontSize: 20 }}>&#10005;</span>
+                </div>
+                <div style={{ display: "flex", gap: 12 }}>
+                  {!cvTexto && (
+                    <button onClick={handleUploadCV} disabled={loading} style={s.btnPrimary}>
+                      {loading ? "Subiendo..." : "Subir CV"}
+                    </button>
+                  )}
+                  {cvTexto && (
+                    <button onClick={handleAnalizar} disabled={loading} style={s.btnPrimary}>
+                      {loading ? "Analizando con IA..." : "Analizar y continuar"}
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
-
-            <button onClick={handleSkipCV} style={styles.btnSecundario}>
-              Saltar → Llenar manualmente
-            </button>
           </div>
 
-          {cvTexto && (
-            <details style={{ marginTop: 12 }}>
-              <summary style={{ cursor: "pointer" }}>Ver texto extraído del CV</summary>
-              <pre style={styles.preview}>{cvTexto.slice(0, 1500)}...</pre>
-            </details>
-          )}
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <span onClick={() => setPaso(2)} style={{ ...s.muted, cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.3)" }}>
+              Saltar — llenar manualmente
+            </span>
+          </div>
         </div>
       )}
 
-      {/* ========== PASO 2: FORMULARIO ========== */}
+      {/* ═══ PASO 2 ═══ */}
       {paso === 2 && (
         <form onSubmit={handleSubmit}>
-          {/* Barra de completitud */}
-          <div style={styles.completitudContainer}>
-            <div style={{ ...styles.completitudBar, width: `${completitud}%` }} />
-            <span style={styles.completitudLabel}>{completitud}% completo</span>
+          {/* Completitud */}
+          <div style={s.progressContainer}>
+            <div style={{ ...s.progressBar, width: `${completitud}%` }} />
+            <span style={s.progressLabel}>{completitud}%</span>
           </div>
 
           {analisis && (
-            <div style={styles.infoIA}>
-              Datos pre-llenados por IA. Revisa y ajusta lo que sea necesario.
-            </div>
+            <div style={s.infoBox}>Datos pre-llenados por IA. Revisa y ajusta lo que sea necesario.</div>
           )}
 
           {/* Datos personales */}
-          <fieldset style={styles.fieldset}>
-            <legend>Datos personales</legend>
-            <div style={styles.grid}>
-              <label style={styles.label}>
-                Nombre completo *
-                <input
-                  name="nombre_completo"
-                  value={form.nombre_completo}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Email *
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Teléfono
-                <input
-                  name="telefono"
-                  value={form.telefono}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Ubicación
-                <input
-                  name="ubicacion"
-                  value={form.ubicacion}
-                  onChange={handleChange}
-                  placeholder="Ej: Medellín, Antioquia"
-                  style={styles.input}
-                />
-              </label>
+          <Section title="Datos personales">
+            <div style={s.grid2}>
+              <Field label="Nombre completo *" name="nombre_completo" value={form.nombre_completo} onChange={handleChange} required />
+              <Field label="Email *" name="email" type="email" value={form.email} onChange={handleChange} required />
+              <Field label="Teléfono" name="telefono" value={form.telefono} onChange={handleChange} />
+              <Field label="Ubicación" name="ubicacion" value={form.ubicacion} onChange={handleChange} placeholder="Ej: Medellín, Antioquia" />
             </div>
-          </fieldset>
+          </Section>
 
           {/* Educación */}
-          <fieldset style={styles.fieldset}>
-            <legend>Educación</legend>
-            <div style={styles.grid}>
-              <label style={styles.label}>
-                Nivel educativo
-                <select
-                  name="nivel_educativo"
-                  value={form.nivel_educativo}
-                  onChange={handleChange}
-                  style={styles.input}
-                >
-                  {NIVELES_EDUCATIVOS.map((n) => (
-                    <option key={n.value} value={n.value}>{n.label}</option>
-                  ))}
+          <Section title="Educación">
+            <div style={s.grid2}>
+              <div style={s.fieldWrap}>
+                <label style={s.label}>Nivel educativo</label>
+                <select name="nivel_educativo" value={form.nivel_educativo} onChange={handleChange}>
+                  {NIVELES_EDUCATIVOS.map((n) => <option key={n.value} value={n.value}>{n.label}</option>)}
                 </select>
-              </label>
-              <label style={styles.label}>
-                Título
-                <input
-                  name="titulo_educativo"
-                  value={form.titulo_educativo}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Institución
-                <input
-                  name="institucion_educativa"
-                  value={form.institucion_educativa}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
+              </div>
+              <Field label="Título" name="titulo_educativo" value={form.titulo_educativo} onChange={handleChange} />
+              <Field label="Institución" name="institucion_educativa" value={form.institucion_educativa} onChange={handleChange} />
             </div>
-          </fieldset>
+          </Section>
 
           {/* Experiencia */}
-          <fieldset style={styles.fieldset}>
-            <legend>Experiencia</legend>
-            <div style={styles.grid}>
-              <label style={styles.label}>
-                Años de experiencia
-                <input
-                  name="experiencia_anos"
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={form.experiencia_anos}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Cargo actual
-                <input
-                  name="cargo_actual"
-                  value={form.cargo_actual}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Empresa actual
-                <input
-                  name="empresa_actual"
-                  value={form.empresa_actual}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
+          <Section title="Experiencia">
+            <div style={s.grid2}>
+              <Field label="Años de experiencia" name="experiencia_anos" type="number" value={form.experiencia_anos} onChange={handleChange} />
+              <Field label="Cargo actual" name="cargo_actual" value={form.cargo_actual} onChange={handleChange} />
+              <Field label="Empresa actual" name="empresa_actual" value={form.empresa_actual} onChange={handleChange} />
             </div>
-            <label style={styles.label}>
-              Resumen profesional
-              <textarea
-                name="resumen_profesional"
-                value={form.resumen_profesional}
-                onChange={handleChange}
-                rows={3}
-                style={{ ...styles.input, resize: "vertical" }}
-              />
-            </label>
-          </fieldset>
+            <div style={{ ...s.fieldWrap, marginTop: 12 }}>
+              <label style={s.label}>Resumen profesional</label>
+              <textarea name="resumen_profesional" value={form.resumen_profesional} onChange={handleChange} rows={3} style={{ resize: "vertical" }} />
+            </div>
+          </Section>
 
           {/* Skills */}
-          <fieldset style={styles.fieldset}>
-            <legend>Habilidades</legend>
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <Section title="Habilidades">
+            <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
               <input
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
                 placeholder="Escribe un skill y presiona Enter"
-                style={{ ...styles.input, flex: 1 }}
+                style={{ flex: 1 }}
               />
-              <button type="button" onClick={handleAddSkill} style={styles.btnSecundario}>
-                Agregar
-              </button>
+              <button type="button" onClick={handleAddSkill} style={s.btnSecondary}>Agregar</button>
             </div>
-            <div style={styles.skillsContainer}>
-              {form.skills.map((s) => (
-                <span key={s} style={styles.skillTag}>
-                  {s}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSkill(s)}
-                    style={styles.skillRemove}
-                  >
-                    ×
-                  </button>
+            <div style={s.tags}>
+              {form.skills.map((sk) => (
+                <span key={sk} style={s.tag}>
+                  {sk}
+                  <span onClick={() => handleRemoveSkill(sk)} style={s.tagX}>&#10005;</span>
                 </span>
               ))}
-              {form.skills.length === 0 && (
-                <span style={{ color: "#999", fontSize: 14 }}>Sin skills agregados</span>
-              )}
+              {form.skills.length === 0 && <span style={s.muted}>Sin skills agregados</span>}
             </div>
-          </fieldset>
+          </Section>
 
-          {/* Preferencias laborales */}
-          <fieldset style={styles.fieldset}>
-            <legend>Preferencias laborales</legend>
-            <div style={styles.grid}>
-              <label style={styles.label}>
-                Salario mínimo esperado (COP)
-                <input
-                  name="aspiracion_salarial_min"
-                  type="number"
-                  min="0"
-                  value={form.aspiracion_salarial_min}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Salario máximo esperado (COP)
-                <input
-                  name="aspiracion_salarial_max"
-                  type="number"
-                  min="0"
-                  value={form.aspiracion_salarial_max}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              </label>
-              <label style={styles.label}>
-                Modalidad preferida
-                <select
-                  name="modalidad_preferida"
-                  value={form.modalidad_preferida}
-                  onChange={handleChange}
-                  style={styles.input}
-                >
-                  {MODALIDADES.map((m) => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
+          {/* Preferencias */}
+          <Section title="Preferencias laborales">
+            <div style={s.grid2}>
+              <Field label="Salario mínimo (COP)" name="aspiracion_salarial_min" type="number" value={form.aspiracion_salarial_min} onChange={handleChange} />
+              <Field label="Salario máximo (COP)" name="aspiracion_salarial_max" type="number" value={form.aspiracion_salarial_max} onChange={handleChange} />
+              <div style={s.fieldWrap}>
+                <label style={s.label}>Modalidad</label>
+                <select name="modalidad_preferida" value={form.modalidad_preferida} onChange={handleChange}>
+                  {MODALIDADES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
-              </label>
-              <label style={styles.label}>
-                Disponibilidad
-                <select
-                  name="disponibilidad"
-                  value={form.disponibilidad}
-                  onChange={handleChange}
-                  style={styles.input}
-                >
-                  {DISPONIBILIDADES.map((d) => (
-                    <option key={d.value} value={d.value}>{d.label}</option>
-                  ))}
+              </div>
+              <div style={s.fieldWrap}>
+                <label style={s.label}>Disponibilidad</label>
+                <select name="disponibilidad" value={form.disponibilidad} onChange={handleChange}>
+                  {DISPONIBILIDADES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
                 </select>
-              </label>
+              </div>
             </div>
-          </fieldset>
+          </Section>
 
-          {/* Botones */}
-          <div style={styles.botones}>
-            <button type="button" onClick={() => setPaso(1)} style={styles.btnSecundario}>
-              ← Volver
-            </button>
-            <button type="submit" disabled={loading} style={styles.btnPrimario}>
+          <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
+            <button type="button" onClick={() => setPaso(1)} style={s.btnSecondary}>&#8592; Volver</button>
+            <button type="submit" disabled={loading} style={s.btnPrimary}>
               {loading ? "Guardando..." : "Guardar perfil"}
             </button>
           </div>
@@ -483,163 +325,58 @@ export default function CrearPerfil({ onPerfilCreado }) {
   )
 }
 
-// --- Estilos ---
-const styles = {
-  container: {
-    maxWidth: 720,
-    margin: "0 auto",
-    padding: "24px 16px",
-    textAlign: "left",
+function Section({ title, children }) {
+  return (
+    <div style={{ border: "1px solid rgba(255,255,255,0.1)", padding: 24, marginBottom: 16 }}>
+      <h3 style={{ fontSize: 16, marginBottom: 16, color: "rgba(255,255,255,0.8)" }}>{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+function Field({ label, name, value, onChange, type = "text", placeholder, required }) {
+  return (
+    <div style={s.fieldWrap}>
+      <label style={s.label}>{label}</label>
+      <input name={name} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} />
+    </div>
+  )
+}
+
+const s = {
+  container: { maxWidth: 720, margin: "0 auto", padding: "40px 24px" },
+  hero: { marginBottom: 40 },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  subtitle: { fontSize: 18, color: "rgba(255,255,255,0.5)" },
+  steps: { display: "flex", alignItems: "center", gap: 12, marginBottom: 32, fontSize: 14 },
+  stepActive: { color: "#fff", borderBottom: "1px solid #fff", paddingBottom: 2 },
+  stepDone: { color: "rgba(255,255,255,0.4)" },
+  stepInactive: { color: "rgba(255,255,255,0.3)" },
+  stepArrow: { color: "rgba(255,255,255,0.2)" },
+  error: { color: "#ff6b6b", border: "1px solid rgba(255,100,100,0.2)", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
+  infoBox: { color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.1)", padding: "10px 14px", marginBottom: 20, fontSize: 14 },
+  dropZone: { border: "2px dashed", transition: "all 0.3s" },
+  muted: { color: "rgba(255,255,255,0.4)", fontSize: 14 },
+  btnPrimary: {
+    display: "inline-block", padding: "14px 28px", background: "#fff", color: "#000",
+    border: "none", fontSize: 14, cursor: "pointer", marginTop: 16,
+    transition: "opacity 0.2s", letterSpacing: "0.02em",
   },
-  pasos: {
-    display: "flex",
-    alignItems: "center",
-    gap: 4,
-    marginBottom: 20,
-    fontSize: 14,
+  btnSecondary: {
+    padding: "12px 24px", background: "transparent", color: "#fff",
+    border: "1px solid rgba(255,255,255,0.2)", fontSize: 14, cursor: "pointer",
+    transition: "border-color 0.2s",
   },
-  pasoActivo: {
-    fontWeight: 600,
-    color: "#2563eb",
-    borderBottom: "2px solid #2563eb",
-    paddingBottom: 2,
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
+  fieldWrap: { display: "flex", flexDirection: "column", gap: 6 },
+  label: { fontSize: 13, color: "rgba(255,255,255,0.5)", letterSpacing: "0.02em" },
+  progressContainer: { height: 4, background: "rgba(255,255,255,0.1)", marginBottom: 24, position: "relative" },
+  progressBar: { height: "100%", background: "#fff", transition: "width 0.3s" },
+  progressLabel: { position: "absolute", right: 0, top: -20, fontSize: 12, color: "rgba(255,255,255,0.5)" },
+  tags: { display: "flex", flexWrap: "wrap", gap: 8 },
+  tag: {
+    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px",
+    border: "1px solid rgba(255,255,255,0.2)", fontSize: 13,
   },
-  pasoInactivo: {
-    color: "#999",
-  },
-  descripcion: {
-    color: "#666",
-    marginBottom: 16,
-    lineHeight: 1.5,
-  },
-  error: {
-    color: "#dc2626",
-    background: "#fef2f2",
-    padding: "8px 12px",
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  infoIA: {
-    color: "#1d4ed8",
-    background: "#eff6ff",
-    padding: "8px 12px",
-    borderRadius: 6,
-    marginBottom: 16,
-    fontSize: 14,
-  },
-  fileInput: {
-    marginBottom: 12,
-    display: "block",
-  },
-  botones: {
-    display: "flex",
-    gap: 10,
-    flexWrap: "wrap",
-    marginTop: 16,
-  },
-  btnPrimario: {
-    padding: "10px 20px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 500,
-  },
-  btnSecundario: {
-    padding: "10px 20px",
-    background: "#f1f5f9",
-    color: "#334155",
-    border: "1px solid #cbd5e1",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 14,
-  },
-  fieldset: {
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-  },
-  label: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-    fontSize: 14,
-    fontWeight: 500,
-    color: "#374151",
-  },
-  input: {
-    padding: "8px 10px",
-    border: "1px solid #d1d5db",
-    borderRadius: 6,
-    fontSize: 14,
-    fontWeight: 400,
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  preview: {
-    background: "#f8fafc",
-    padding: 12,
-    borderRadius: 6,
-    fontSize: 12,
-    maxHeight: 200,
-    overflow: "auto",
-    whiteSpace: "pre-wrap",
-    marginTop: 8,
-  },
-  completitudContainer: {
-    height: 24,
-    background: "#e5e7eb",
-    borderRadius: 12,
-    marginBottom: 16,
-    position: "relative",
-    overflow: "hidden",
-  },
-  completitudBar: {
-    height: "100%",
-    background: "linear-gradient(90deg, #3b82f6, #10b981)",
-    borderRadius: 12,
-    transition: "width 0.3s ease",
-  },
-  completitudLabel: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#1f2937",
-  },
-  skillsContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  skillTag: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 4,
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    padding: "4px 10px",
-    borderRadius: 16,
-    fontSize: 13,
-  },
-  skillRemove: {
-    background: "none",
-    border: "none",
-    color: "#1d4ed8",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: 16,
-    padding: 0,
-    lineHeight: 1,
-  },
+  tagX: { cursor: "pointer", opacity: 0.5, fontSize: 11 },
 }

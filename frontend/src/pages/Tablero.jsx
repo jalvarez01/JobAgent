@@ -2,149 +2,85 @@ import { useState, useEffect } from "react"
 import { listarPostulaciones, cambiarEstado, obtenerTrazas } from "../api/postulaciones"
 
 const COLUMNAS = [
-  { key: "postulado", label: "Postulado", color: "#3b82f6" },
-  { key: "en_revision", label: "En revisión", color: "#8b5cf6" },
-  { key: "entrevista", label: "Entrevista", color: "#f59e0b" },
-  { key: "oferta", label: "Oferta", color: "#10b981" },
-  { key: "descartado", label: "Descartado", color: "#ef4444" },
+  { key: "postulado", label: "Postulado", accent: "rgba(99,102,241,0.8)" },
+  { key: "en_revision", label: "En revisión", accent: "rgba(168,85,247,0.8)" },
+  { key: "entrevista", label: "Entrevista", accent: "rgba(251,191,36,0.8)" },
+  { key: "oferta", label: "Oferta", accent: "rgba(74,222,128,0.8)" },
+  { key: "descartado", label: "Descartado", accent: "rgba(248,113,113,0.8)" },
 ]
 
 export default function Tablero({ perfil, onVolver }) {
   const [postulaciones, setPostulaciones] = useState([])
   const [trazas, setTrazas] = useState([])
   const [loading, setLoading] = useState(true)
-  const [vista, setVista] = useState("tablero") // "tablero" | "historial"
+  const [vista, setVista] = useState("tablero")
 
-  useEffect(() => {
-    if (perfil?.id) cargarDatos()
-  }, [perfil?.id])
+  useEffect(() => { if (perfil?.id) cargar() }, [perfil?.id])
 
-  const cargarDatos = async () => {
+  const cargar = async () => {
     setLoading(true)
     try {
-      const [posts, logs] = await Promise.all([
-        listarPostulaciones(perfil.id),
-        obtenerTrazas(perfil.id, 30),
-      ])
-      setPostulaciones(posts)
-      setTrazas(logs)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+      const [posts, logs] = await Promise.all([listarPostulaciones(perfil.id), obtenerTrazas(perfil.id, 30)])
+      setPostulaciones(posts); setTrazas(logs)
+    } catch (err) { console.error(err) }
+    finally { setLoading(false) }
   }
 
-  const handleCambiarEstado = async (postId, nuevoEstado) => {
-    try {
-      await cambiarEstado(postId, nuevoEstado)
-      await cargarDatos()
-    } catch (err) {
-      alert(err.message)
-    }
+  const handleCambiar = async (id, estado) => {
+    try { await cambiarEstado(id, estado); await cargar() }
+    catch (err) { alert(err.message) }
   }
 
-  const postulacionesPorEstado = (estado) =>
-    postulaciones.filter((p) => p.estado === estado)
+  const porEstado = (estado) => postulaciones.filter((p) => p.estado === estado)
 
-  const formatFecha = (fecha) => {
-    if (!fecha) return ""
-    return new Date(fecha).toLocaleDateString("es-CO", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  const fmtFecha = (f) => f ? new Date(f).toLocaleDateString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""
 
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <p style={{ textAlign: "center", color: "#999", padding: 40 }}>Cargando tablero...</p>
-      </div>
-    )
-  }
+  if (loading) return <div style={s.container}><p style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.4)" }}>Cargando...</p></div>
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={{ margin: 0 }}>Tablero de seguimiento</h2>
-        <div style={styles.headerActions}>
-          <button
-            onClick={() => setVista(vista === "tablero" ? "historial" : "tablero")}
-            style={styles.btnTab}
-          >
-            {vista === "tablero" ? "Ver historial" : "Ver tablero"}
+    <div style={s.container}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40 }}>
+        <div>
+          <h1 style={s.title}>Tablero</h1>
+          <p style={s.subtitle}>Seguimiento de tus postulaciones</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => setVista(vista === "tablero" ? "historial" : "tablero")} style={s.btnSec}>
+            {vista === "tablero" ? "Historial" : "Tablero"}
           </button>
-          <button onClick={onVolver} style={styles.btnSecundario}>← Volver</button>
+          <button onClick={onVolver} style={s.btnSec}>&#8592; Volver</button>
         </div>
       </div>
 
       {postulaciones.length === 0 ? (
-        <div style={styles.empty}>
+        <div style={{ textAlign: "center", padding: 60 }}>
           <p>No tienes postulaciones aún.</p>
-          <p style={{ fontSize: 14, color: "#999" }}>
-            Postúlate a vacantes desde las recomendaciones o ejecuta el pipeline automático.
-          </p>
+          <p style={s.subtitle}>Postúlate desde las vacantes recomendadas.</p>
         </div>
       ) : vista === "tablero" ? (
-        /* ─── Vista Kanban ─── */
-        <div style={styles.kanban}>
+        <div style={s.kanban}>
           {COLUMNAS.map((col) => {
-            const items = postulacionesPorEstado(col.key)
+            const items = porEstado(col.key)
             return (
-              <div key={col.key} style={styles.columna}>
-                <div style={{ ...styles.columnaHeader, borderTopColor: col.color }}>
-                  <span style={styles.columnaLabel}>{col.label}</span>
-                  <span style={styles.columnaBadge}>{items.length}</span>
+              <div key={col.key} style={s.col}>
+                <div style={{ ...s.colHeader, borderTopColor: col.accent }}>
+                  <span style={{ fontSize: 13 }}>{col.label}</span>
+                  <span style={s.badge}>{items.length}</span>
                 </div>
-                <div style={styles.columnaBody}>
+                <div style={s.colBody}>
                   {items.map((p) => (
-                    <div key={p.id} style={styles.card}>
-                      <p style={styles.cardTitle}>{p.vacante_titulo || "Vacante"}</p>
-                      <p style={styles.cardEmpresa}>{p.vacante_empresa || ""}</p>
-                      {p.score_match && (
-                        <span style={styles.scorePill}>{p.score_match}% match</span>
-                      )}
-                      <p style={styles.cardTipo}>
-                        {p.tipo === "auto" ? "Autopostulación" : "Manual"}
-                      </p>
-                      <p style={styles.cardFecha}>{formatFecha(p.created_at)}</p>
-
-                      {/* Acciones de cambio de estado */}
-                      <div style={styles.cardActions}>
-                        {col.key === "postulado" && (
-                          <button
-                            onClick={() => handleCambiarEstado(p.id, "en_revision")}
-                            style={styles.btnMini}
-                          >
-                            → En revisión
-                          </button>
-                        )}
-                        {col.key === "en_revision" && (
-                          <button
-                            onClick={() => handleCambiarEstado(p.id, "entrevista")}
-                            style={styles.btnMini}
-                          >
-                            → Entrevista
-                          </button>
-                        )}
-                        {col.key === "entrevista" && (
-                          <button
-                            onClick={() => handleCambiarEstado(p.id, "oferta")}
-                            style={{ ...styles.btnMini, background: "#d1fae5", color: "#065f46" }}
-                          >
-                            → Oferta
-                          </button>
-                        )}
-                        {!["oferta", "descartado"].includes(col.key) && (
-                          <button
-                            onClick={() => handleCambiarEstado(p.id, "descartado")}
-                            style={{ ...styles.btnMini, background: "#fee2e2", color: "#991b1b" }}
-                          >
-                            Descartar
-                          </button>
-                        )}
+                    <div key={p.id} style={s.card}>
+                      <div style={{ fontSize: 13, marginBottom: 4 }}>{p.vacante_titulo || "Vacante"}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>{p.vacante_empresa}</div>
+                      {p.score_match && <span style={s.scorePill}>{p.score_match}%</span>}
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
+                        {p.tipo === "auto" ? "Auto" : "Manual"} · {fmtFecha(p.created_at)}
+                      </div>
+                      <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                        {col.key === "postulado" && <MiniBtn label="→ Revisión" onClick={() => handleCambiar(p.id, "en_revision")} />}
+                        {col.key === "en_revision" && <MiniBtn label="→ Entrevista" onClick={() => handleCambiar(p.id, "entrevista")} />}
+                        {col.key === "entrevista" && <MiniBtn label="→ Oferta" onClick={() => handleCambiar(p.id, "oferta")} green />}
+                        {!["oferta", "descartado"].includes(col.key) && <MiniBtn label="Descartar" onClick={() => handleCambiar(p.id, "descartado")} red />}
                       </div>
                     </div>
                   ))}
@@ -154,154 +90,41 @@ export default function Tablero({ perfil, onVolver }) {
           })}
         </div>
       ) : (
-        /* ─── Vista Historial ─── */
-        <div style={styles.historial}>
-          {trazas.length === 0 ? (
-            <p style={{ color: "#999" }}>Sin actividad registrada.</p>
-          ) : (
-            trazas.map((t) => (
-              <div key={t.id} style={styles.trazaItem}>
-                <div style={styles.trazaDot} />
-                <div style={{ flex: 1 }}>
-                  <p style={styles.trazaDesc}>{t.descripcion}</p>
-                  <p style={styles.trazaMeta}>
-                    {t.origen} · {formatFecha(t.created_at)}
-                  </p>
-                </div>
+        <div style={s.timeline}>
+          {trazas.length === 0 ? <p style={s.subtitle}>Sin actividad registrada.</p> : trazas.map((t) => (
+            <div key={t.id} style={s.timelineItem}>
+              <div style={s.dot} />
+              <div>
+                <div style={{ fontSize: 14 }}>{t.descripcion}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>{t.origen} · {fmtFecha(t.created_at)}</div>
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-const styles = {
-  container: {
-    maxWidth: 960,
-    margin: "0 auto",
-    padding: "24px 16px",
-    textAlign: "left",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  headerActions: { display: "flex", gap: 8 },
-  btnSecundario: {
-    padding: "6px 14px",
-    background: "#f1f5f9",
-    color: "#334155",
-    border: "1px solid #cbd5e1",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  btnTab: {
-    padding: "6px 14px",
-    background: "#eff6ff",
-    color: "#2563eb",
-    border: "1px solid #bfdbfe",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  empty: { textAlign: "center", padding: 40, color: "#6b7280" },
-  kanban: {
-    display: "flex",
-    gap: 10,
-    overflowX: "auto",
-    paddingBottom: 8,
-  },
-  columna: {
-    flex: "1 0 170px",
-    minWidth: 170,
-    background: "#f9fafb",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  columnaHeader: {
-    padding: "10px 12px",
-    borderTop: "3px solid",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  columnaLabel: { fontSize: 13, fontWeight: 600, color: "#374151" },
-  columnaBadge: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#6b7280",
-    background: "#e5e7eb",
-    padding: "1px 7px",
-    borderRadius: 10,
-  },
-  columnaBody: {
-    padding: "8px 8px 12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    minHeight: 80,
-  },
-  card: {
-    background: "#fff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 6,
-    padding: 10,
-  },
-  cardTitle: { fontSize: 13, fontWeight: 600, margin: 0, color: "#111827" },
-  cardEmpresa: { fontSize: 12, color: "#6b7280", margin: "2px 0 4px" },
-  scorePill: {
-    fontSize: 11,
-    color: "#065f46",
-    background: "#d1fae5",
-    padding: "1px 6px",
-    borderRadius: 8,
-    display: "inline-block",
-    marginBottom: 4,
-  },
-  cardTipo: { fontSize: 11, color: "#9ca3af", margin: "2px 0" },
-  cardFecha: { fontSize: 11, color: "#9ca3af", margin: 0 },
-  cardActions: { display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" },
-  btnMini: {
-    fontSize: 11,
-    padding: "3px 8px",
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    border: "none",
-    borderRadius: 4,
-    cursor: "pointer",
-  },
-  historial: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 0,
-    borderLeft: "2px solid #e5e7eb",
-    marginLeft: 12,
-    paddingLeft: 20,
-  },
-  trazaItem: {
-    display: "flex",
-    gap: 12,
-    padding: "10px 0",
-    borderBottom: "1px solid #f3f4f6",
-    position: "relative",
-  },
-  trazaDot: {
-    width: 8,
-    height: 8,
-    borderRadius: "50%",
-    background: "#3b82f6",
-    flexShrink: 0,
-    marginTop: 5,
-    position: "absolute",
-    left: -25,
-  },
-  trazaDesc: { fontSize: 14, margin: 0, color: "#374151" },
-  trazaMeta: { fontSize: 12, margin: "2px 0 0", color: "#9ca3af" },
+function MiniBtn({ label, onClick, green, red }) {
+  const color = green ? "rgba(74,222,128,0.8)" : red ? "rgba(248,113,113,0.8)" : "rgba(255,255,255,0.6)"
+  const border = green ? "rgba(74,222,128,0.2)" : red ? "rgba(248,113,113,0.2)" : "rgba(255,255,255,0.15)"
+  return <button onClick={onClick} style={{ fontSize: 11, padding: "3px 8px", background: "transparent", color, border: `1px solid ${border}`, cursor: "pointer" }}>{label}</button>
+}
+
+const s = {
+  container: { maxWidth: 1060, margin: "0 auto", padding: "40px 24px" },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  subtitle: { fontSize: 16, color: "rgba(255,255,255,0.4)" },
+  btnSec: { padding: "8px 16px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer" },
+  kanban: { display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 },
+  col: { flex: "1 0 180px", minWidth: 180 },
+  colHeader: { padding: "10px 12px", borderTop: "2px solid", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.07)" },
+  badge: { fontSize: 11, color: "rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.07)", padding: "1px 7px" },
+  colBody: { padding: "8px 0", display: "flex", flexDirection: "column", gap: 8, minHeight: 80 },
+  card: { border: "1px solid rgba(255,255,255,0.08)", padding: 10 },
+  scorePill: { fontSize: 11, color: "rgba(74,222,128,0.8)", border: "1px solid rgba(74,222,128,0.2)", padding: "1px 6px", display: "inline-block" },
+  timeline: { borderLeft: "1px solid rgba(255,255,255,0.1)", marginLeft: 12, paddingLeft: 24 },
+  timelineItem: { display: "flex", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", position: "relative" },
+  dot: { width: 6, height: 6, background: "#fff", flexShrink: 0, marginTop: 6, position: "absolute", left: -27 },
 }

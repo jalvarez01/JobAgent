@@ -10,136 +10,101 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
 
   const handlePostular = async () => {
     if (!perfilId) return
-    setPostulando(true)
-    setError("")
+    setPostulando(true); setError("")
     try {
       await crearPostulacion({
-        perfil_id: perfilId,
-        vacante_id: String(vacante.id),
-        tipo: "manual",
-        score_match: vacante.score ? String(Math.round(vacante.score * 100)) : null,
+        perfil_id: perfilId, vacante_id: String(vacante.id),
+        tipo: "manual", score_match: vacante.score ? String(Math.round(vacante.score * 100)) : null,
       })
       setPostulado(true)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setPostulando(false)
-    }
+    } catch (err) { setError(err.message) }
+    finally { setPostulando(false) }
   }
 
-  const formatSalario = (min, max) => {
+  const fmt = (min, max) => {
     if (!min && !max) return "No especificado"
-    const fmt = (n) => `$${Number(n).toLocaleString("es-CO")}`
-    if (min && max) return `${fmt(min)} - ${fmt(max)} COP`
-    if (min) return `Desde ${fmt(min)} COP`
-    return `Hasta ${fmt(max)} COP`
+    const f = (n) => `$${Number(n).toLocaleString("es-CO")}`
+    if (min && max) return `${f(min)} - ${f(max)} COP`
+    return min ? `Desde ${f(min)} COP` : `Hasta ${f(max)} COP`
   }
 
-  const requisitos = vacante.requisitos
-    ? vacante.requisitos.split(";").map((s) => s.trim()).filter(Boolean)
-    : []
-
-  const scoreColor = (score) => {
-    if (score >= 0.7) return "#059669"
-    if (score >= 0.4) return "#d97706"
-    return "#9ca3af"
-  }
+  const requisitos = vacante.requisitos ? vacante.requisitos.split(";").map((s) => s.trim()).filter(Boolean) : []
 
   return (
-    <div style={styles.container}>
-      <button onClick={onVolver} style={styles.btnVolver}>
-        ← Volver a recomendaciones
-      </button>
+    <div style={s.container}>
+      <span onClick={onVolver} style={s.back}>&#8592; Volver a vacantes</span>
 
-      <div style={styles.card}>
+      <div style={s.card}>
         {/* Header */}
-        <div style={styles.header}>
-          <div style={{ flex: 1 }}>
-            <h2 style={styles.titulo}>{vacante.titulo}</h2>
-            <p style={styles.empresa}>{vacante.empresa}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
+          <div>
+            <h1 style={{ fontSize: 36, marginBottom: 8, letterSpacing: "-0.02em" }}>{vacante.titulo}</h1>
+            <p style={s.muted}>{vacante.empresa}</p>
           </div>
           {vacante.score !== undefined && (
-            <div style={{
-              ...styles.scoreBadge,
-              background: scoreColor(vacante.score),
-            }}>
-              {Math.round(vacante.score * 100)}% match
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 36 }}>{Math.round(vacante.score * 100)}%</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>match</div>
             </div>
           )}
         </div>
 
-        {/* Metadata */}
-        <div style={styles.metaGrid}>
-          <MetaItem label="Ubicación" valor={vacante.ubicacion} />
-          <MetaItem label="Modalidad" valor={vacante.modalidad} />
-          <MetaItem label="Salario" valor={formatSalario(vacante.salario_min, vacante.salario_max)} />
-          <MetaItem label="Estado" valor={vacante.estado} />
+        {/* Meta */}
+        <div style={s.metaGrid}>
+          <MetaItem label="Ubicación" value={vacante.ubicacion} />
+          <MetaItem label="Modalidad" value={vacante.modalidad} />
+          <MetaItem label="Salario" value={fmt(vacante.salario_min, vacante.salario_max)} />
+          <MetaItem label="Estado" value={vacante.estado} />
         </div>
 
         {/* Descripción */}
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Descripción</h3>
-          <p style={styles.descripcion}>{vacante.descripcion || "Sin descripción disponible."}</p>
+        <div style={s.section}>
+          <h3 style={s.sectionTitle}>Descripción</h3>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.7)" }}>
+            {vacante.descripcion || "Sin descripción disponible."}
+          </p>
         </div>
 
         {/* Requisitos */}
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Requisitos</h3>
-          <div style={styles.skillsContainer}>
-            {requisitos.length > 0 ? (
-              requisitos.map((r) => {
-                const isMatch = vacante.skills_match?.includes(r.toLowerCase())
-                return (
-                  <span
-                    key={r}
-                    style={isMatch ? styles.skillMatch : styles.skillNormal}
-                  >
-                    {isMatch ? "✓ " : ""}{r}
-                  </span>
-                )
-              })
-            ) : (
-              <span style={{ color: "#999", fontSize: 14 }}>No especificados</span>
-            )}
+        <div style={s.section}>
+          <h3 style={s.sectionTitle}>Requisitos</h3>
+          <div style={s.tags}>
+            {requisitos.length > 0 ? requisitos.map((r) => {
+              const isMatch = vacante.skills_match?.includes(r.toLowerCase())
+              return (
+                <span key={r} style={isMatch ? s.skillOk : s.skillNormal}>
+                  {isMatch ? "✓ " : ""}{r}
+                </span>
+              )
+            }) : <span style={s.muted}>No especificados</span>}
           </div>
         </div>
 
         {/* Skills faltantes */}
         {vacante.skills_faltantes?.length > 0 && (
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Skills que te faltan</h3>
-            <div style={styles.skillsContainer}>
-              {vacante.skills_faltantes.map((s) => (
-                <span key={s} style={styles.skillMissing}>{s}</span>
-              ))}
+          <div style={s.section}>
+            <h3 style={s.sectionTitle}>Skills que te faltan</h3>
+            <div style={s.tags}>
+              {vacante.skills_faltantes.map((sk) => <span key={sk} style={s.skillMiss}>{sk}</span>)}
             </div>
-            <p style={styles.tip}>
-              Desarrollar estas habilidades mejoraría tu match con esta vacante.
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginTop: 8, fontStyle: "italic" }}>
+              Desarrollar estas habilidades mejoraría tu match.
             </p>
           </div>
         )}
 
         {/* Acciones */}
-        {error && <p style={{ color: "#dc2626", fontSize: 14, marginBottom: 8 }}>{error}</p>}
-        <div style={styles.acciones}>
+        {error && <div style={s.error}>{error}</div>}
+        <div style={{ display: "flex", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           {postulado ? (
-            <span style={styles.btnPostulado}>Postulación enviada</span>
+            <span style={s.btnDone}>Postulación enviada</span>
           ) : (
-            <button
-              onClick={handlePostular}
-              disabled={postulando || !perfilId}
-              style={styles.btnPostular}
-            >
+            <button onClick={handlePostular} disabled={postulando || !perfilId} style={s.btnPrimary}>
               {postulando ? "Postulando..." : "Postularme a esta vacante"}
             </button>
           )}
           {vacante.url && (
-            <a
-              href={vacante.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.btnExterno}
-            >
+            <a href={vacante.url} target="_blank" rel="noopener noreferrer" style={s.btnSec}>
               Ver oferta original
             </a>
           )}
@@ -149,157 +114,29 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
   )
 }
 
-function MetaItem({ label, valor }) {
+function MetaItem({ label, value }) {
   return (
-    <div>
-      <span style={{ fontSize: 12, color: "#6b7280" }}>{label}</span>
-      <p style={{ margin: "2px 0", fontSize: 14, fontWeight: 500, color: "#111827" }}>
-        {valor || "—"}
-      </p>
+    <div style={{ padding: 14, background: "rgba(255,255,255,0.03)" }}>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14 }}>{value || "—"}</div>
     </div>
   )
 }
 
-const styles = {
-  container: {
-    maxWidth: 720,
-    margin: "0 auto",
-    padding: "24px 16px",
-    textAlign: "left",
-  },
-  btnVolver: {
-    padding: "8px 16px",
-    background: "none",
-    color: "#2563eb",
-    border: "none",
-    cursor: "pointer",
-    fontSize: 14,
-    marginBottom: 12,
-    paddingLeft: 0,
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: 24,
-    background: "#fff",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 16,
-    marginBottom: 20,
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: 600,
-    margin: 0,
-    color: "#111827",
-  },
-  empresa: {
-    fontSize: 16,
-    color: "#6b7280",
-    margin: "4px 0 0",
-  },
-  scoreBadge: {
-    color: "#fff",
-    fontWeight: 700,
-    fontSize: 14,
-    padding: "8px 16px",
-    borderRadius: 20,
-    flexShrink: 0,
-  },
-  metaGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr 1fr",
-    gap: 16,
-    padding: "16px 0",
-    borderTop: "1px solid #f3f4f6",
-    borderBottom: "1px solid #f3f4f6",
-    marginBottom: 16,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: "#374151",
-    margin: "0 0 8px",
-  },
-  descripcion: {
-    fontSize: 14,
-    lineHeight: 1.6,
-    color: "#4b5563",
-    margin: 0,
-  },
-  skillsContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  skillMatch: {
-    fontSize: 13,
-    color: "#065f46",
-    background: "#d1fae5",
-    padding: "4px 12px",
-    borderRadius: 16,
-    fontWeight: 500,
-  },
-  skillNormal: {
-    fontSize: 13,
-    color: "#374151",
-    background: "#f3f4f6",
-    padding: "4px 12px",
-    borderRadius: 16,
-  },
-  skillMissing: {
-    fontSize: 13,
-    color: "#92400e",
-    background: "#fef3c7",
-    padding: "4px 12px",
-    borderRadius: 16,
-  },
-  tip: {
-    fontSize: 13,
-    color: "#6b7280",
-    fontStyle: "italic",
-    marginTop: 8,
-  },
-  acciones: {
-    display: "flex",
-    gap: 12,
-    paddingTop: 16,
-    borderTop: "1px solid #f3f4f6",
-  },
-  btnPostular: {
-    padding: "12px 24px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontSize: 15,
-    fontWeight: 600,
-  },
-  btnPostulado: {
-    padding: "12px 24px",
-    background: "#d1fae5",
-    color: "#065f46",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 15,
-    fontWeight: 600,
-  },
-  btnExterno: {
-    padding: "12px 24px",
-    background: "#f1f5f9",
-    color: "#334155",
-    border: "1px solid #cbd5e1",
-    borderRadius: 8,
-    textDecoration: "none",
-    fontSize: 14,
-    display: "inline-flex",
-    alignItems: "center",
-  },
+const s = {
+  container: { maxWidth: 760, margin: "0 auto", padding: "40px 24px" },
+  back: { color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 14, display: "inline-block", marginBottom: 20 },
+  card: { border: "1px solid rgba(255,255,255,0.1)", padding: 32 },
+  muted: { color: "rgba(255,255,255,0.5)", fontSize: 16 },
+  metaGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.07)" },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: 12 },
+  tags: { display: "flex", flexWrap: "wrap", gap: 6 },
+  skillOk: { fontSize: 13, color: "rgba(74,222,128,0.9)", padding: "5px 12px", border: "1px solid rgba(74,222,128,0.25)" },
+  skillNormal: { fontSize: 13, color: "rgba(255,255,255,0.7)", padding: "5px 12px", border: "1px solid rgba(255,255,255,0.1)" },
+  skillMiss: { fontSize: 13, color: "rgba(251,191,36,0.8)", padding: "5px 12px", border: "1px solid rgba(251,191,36,0.2)" },
+  error: { color: "#ff6b6b", fontSize: 14, marginBottom: 12 },
+  btnPrimary: { padding: "14px 28px", background: "#fff", color: "#000", border: "none", fontSize: 15, cursor: "pointer" },
+  btnDone: { padding: "14px 28px", border: "1px solid rgba(74,222,128,0.3)", color: "rgba(74,222,128,0.9)", fontSize: 15 },
+  btnSec: { padding: "14px 28px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 14, display: "inline-flex", alignItems: "center" },
 }

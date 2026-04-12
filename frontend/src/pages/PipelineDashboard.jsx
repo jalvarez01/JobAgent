@@ -2,11 +2,11 @@ import { useState } from "react"
 import { ejecutarPipeline } from "../api/postulaciones"
 
 const AGENTES = [
-  { key: "perfil_agent", label: "Agente de Perfil", icon: "1" },
-  { key: "vacantes_agent", label: "Agente de Vacantes", icon: "2" },
-  { key: "recomendacion_agent", label: "Agente de Recomendación", icon: "3" },
-  { key: "postulacion_agent", label: "Agente de Postulación", icon: "4" },
-  { key: "seguimiento_agent", label: "Agente de Seguimiento", icon: "5" },
+  { key: "perfil_agent", label: "Perfil", num: "01" },
+  { key: "vacantes_agent", label: "Vacantes", num: "02" },
+  { key: "recomendacion_agent", label: "Recomendación", num: "03" },
+  { key: "postulacion_agent", label: "Postulación", num: "04" },
+  { key: "seguimiento_agent", label: "Seguimiento", num: "05" },
 ]
 
 export default function PipelineDashboard({ perfil, onVerTablero, onVolver }) {
@@ -15,127 +15,84 @@ export default function PipelineDashboard({ perfil, onVerTablero, onVolver }) {
   const [error, setError] = useState("")
 
   const handleEjecutar = async () => {
-    setLoading(true)
-    setError("")
-    setResultado(null)
+    setLoading(true); setError(""); setResultado(null)
     try {
       const res = await ejecutarPipeline(perfil.id, perfil.cv_texto || "")
       setResultado(res)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  const logsDeAgente = (key) => {
-    if (!resultado?.log) return []
-    return resultado.log.filter((l) => l.includes(`[${key}]`))
-  }
+  const logsDeAgente = (key) => resultado?.log?.filter((l) => l.includes(`[${key}]`)) || []
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div style={s.container}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40 }}>
         <div>
-          <h2 style={{ margin: 0 }}>Pipeline de agentes</h2>
-          <p style={styles.subtitle}>
-            Ejecuta el flujo completo: analizar perfil → cargar vacantes → recomendar → postular → seguimiento
-          </p>
+          <h1 style={s.title}>Pipeline</h1>
+          <p style={s.subtitle}>Ejecuta el flujo completo de agentes de IA</p>
         </div>
-        <button onClick={onVolver} style={styles.btnSecundario}>← Volver</button>
+        <button onClick={onVolver} style={s.btnSec}>&#8592; Volver</button>
       </div>
 
-      {/* Botón de ejecución */}
-      <div style={styles.ejecutarSection}>
-        <button
-          onClick={handleEjecutar}
-          disabled={loading}
-          style={styles.btnEjecutar}
-        >
-          {loading ? "Ejecutando pipeline..." : "Ejecutar pipeline completo"}
+      {/* Ejecutar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32 }}>
+        <button onClick={handleEjecutar} disabled={loading} style={s.btnPrimary}>
+          {loading ? "Ejecutando..." : "Ejecutar pipeline"}
         </button>
-        {perfil && (
-          <span style={styles.perfilInfo}>
-            Perfil: {perfil.nombre_completo} · {perfil.skills?.length || 0} skills
-          </span>
-        )}
+        <span style={s.subtitle}>{perfil?.nombre_completo} · {perfil?.skills?.length || 0} skills</span>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <div style={s.error}>{error}</div>}
 
-      {/* Resultado */}
       {resultado && (
-        <div>
-          {/* Visualización del flujo de agentes */}
-          <div style={styles.pipeline}>
-            {AGENTES.map((agente, i) => {
-              const logs = logsDeAgente(agente.key)
-              const tieneError = resultado.errores?.some((e) => e.includes(`[${agente.key}]`))
+        <>
+          {/* Agentes */}
+          <div style={s.agentRow}>
+            {AGENTES.map((ag, i) => {
+              const logs = logsDeAgente(ag.key)
+              const hasErr = resultado.errores?.some((e) => e.includes(`[${ag.key}]`))
               return (
-                <div key={agente.key} style={styles.agenteContainer}>
-                  <div style={{
-                    ...styles.agenteCard,
-                    borderColor: tieneError ? "#ef4444" : logs.length > 0 ? "#10b981" : "#d1d5db",
-                  }}>
-                    <div style={{
-                      ...styles.agenteIcon,
-                      background: tieneError ? "#fef2f2" : "#ecfdf5",
-                      color: tieneError ? "#dc2626" : "#059669",
-                    }}>
-                      {agente.icon}
-                    </div>
-                    <p style={styles.agenteLabel}>{agente.label}</p>
-                    <div style={styles.agenteLogs}>
-                      {logs.map((l, j) => (
-                        <p key={j} style={styles.logLine}>
-                          {l.replace(`[${agente.key}] `, "")}
-                        </p>
-                      ))}
-                    </div>
+                <div key={ag.key} style={{ display: "flex", alignItems: "flex-start" }}>
+                  <div style={{ ...s.agentCard, borderColor: hasErr ? "rgba(248,113,113,0.5)" : logs.length > 0 ? "rgba(74,222,128,0.3)" : "rgba(255,255,255,0.08)" }}>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 6 }}>{ag.num}</div>
+                    <div style={{ fontSize: 13, marginBottom: 8 }}>{ag.label}</div>
+                    {logs.map((l, j) => (
+                      <div key={j} style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.4, marginBottom: 2 }}>
+                        {l.replace(`[${ag.key}] `, "")}
+                      </div>
+                    ))}
                   </div>
-                  {i < AGENTES.length - 1 && <div style={styles.arrow}>→</div>}
+                  {i < AGENTES.length - 1 && <span style={{ color: "rgba(255,255,255,0.15)", padding: "20px 8px 0", fontSize: 16 }}>&#8594;</span>}
                 </div>
               )
             })}
           </div>
 
-          {/* Resumen */}
-          <div style={styles.resumen}>
-            <div style={styles.resumenCard}>
-              <span style={styles.resumenNum}>{resultado.recomendaciones?.length || 0}</span>
-              <span style={styles.resumenLabel}>Vacantes recomendadas</span>
-            </div>
-            <div style={styles.resumenCard}>
-              <span style={styles.resumenNum}>{resultado.postulaciones_count || 0}</span>
-              <span style={styles.resumenLabel}>Postulaciones automáticas</span>
-            </div>
-            <div style={styles.resumenCard}>
-              <span style={{
-                ...styles.resumenNum,
-                color: resultado.perfil_completo ? "#059669" : "#d97706",
-              }}>
-                {resultado.perfil_completo ? "Sí" : "No"}
-              </span>
-              <span style={styles.resumenLabel}>Perfil completo</span>
-            </div>
+          {/* Métricas */}
+          <div style={s.metricsGrid}>
+            <MetricCard value={resultado.recomendaciones?.length || 0} label="Vacantes recomendadas" />
+            <MetricCard value={resultado.postulaciones_count || 0} label="Postulaciones automáticas" />
+            <MetricCard value={resultado.perfil_completo ? "Sí" : "No"} label="Perfil completo" accent={resultado.perfil_completo} />
           </div>
 
-          {/* Notificaciones y próximos pasos */}
+          {/* Notificaciones */}
           {resultado.notificaciones?.length > 0 && (
-            <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>Notificaciones</h3>
+            <div style={s.section}>
+              <h3 style={s.sectionTitle}>Notificaciones</h3>
               {resultado.notificaciones.map((n, i) => (
-                <div key={i} style={styles.notif}>{n}</div>
+                <div key={i} style={s.notif}>{n}</div>
               ))}
             </div>
           )}
 
+          {/* Próximos pasos */}
           {resultado.proximos_pasos?.length > 0 && (
-            <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>Próximos pasos</h3>
+            <div style={s.section}>
+              <h3 style={s.sectionTitle}>Próximos pasos</h3>
               {resultado.proximos_pasos.map((p, i) => (
-                <div key={i} style={styles.paso}>
-                  <span style={styles.pasoNum}>{i + 1}</span>
+                <div key={i} style={s.paso}>
+                  <span style={s.pasoNum}>{i + 1}</span>
                   {p}
                 </div>
               ))}
@@ -144,80 +101,44 @@ export default function PipelineDashboard({ perfil, onVerTablero, onVolver }) {
 
           {/* Errores */}
           {resultado.errores?.length > 0 && (
-            <div style={styles.section}>
-              <h3 style={{ ...styles.sectionTitle, color: "#dc2626" }}>Errores</h3>
-              {resultado.errores.map((e, i) => (
-                <p key={i} style={styles.errorLine}>{e}</p>
-              ))}
+            <div style={s.section}>
+              <h3 style={{ ...s.sectionTitle, color: "rgba(248,113,113,0.9)" }}>Errores</h3>
+              {resultado.errores.map((e, i) => <p key={i} style={{ fontSize: 13, color: "rgba(248,113,113,0.7)", marginBottom: 4 }}>{e}</p>)}
             </div>
           )}
 
-          {/* Acción de ir al tablero */}
           {resultado.postulaciones_count > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <button onClick={onVerTablero} style={styles.btnPrimario}>
-                Ver tablero de seguimiento →
-              </button>
-            </div>
+            <button onClick={onVerTablero} style={{ ...s.btnPrimary, marginTop: 24 }}>Ver tablero de seguimiento &#8594;</button>
           )}
-        </div>
+        </>
       )}
     </div>
   )
 }
 
-const styles = {
-  container: { maxWidth: 860, margin: "0 auto", padding: "24px 16px", textAlign: "left" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 12 },
-  subtitle: { fontSize: 14, color: "#6b7280", margin: "4px 0 0" },
-  ejecutarSection: { display: "flex", alignItems: "center", gap: 16, marginBottom: 20, flexWrap: "wrap" },
-  btnEjecutar: {
-    padding: "12px 28px", background: "#7c3aed", color: "#fff", border: "none",
-    borderRadius: 8, cursor: "pointer", fontSize: 15, fontWeight: 600,
-  },
-  perfilInfo: { fontSize: 13, color: "#6b7280" },
-  error: { color: "#dc2626", background: "#fef2f2", padding: "8px 12px", borderRadius: 6, marginBottom: 12 },
-  pipeline: { display: "flex", gap: 0, overflowX: "auto", paddingBottom: 12, marginBottom: 20, alignItems: "flex-start" },
-  agenteContainer: { display: "flex", alignItems: "flex-start", gap: 0 },
-  agenteCard: {
-    border: "2px solid", borderRadius: 10, padding: 12, minWidth: 140, maxWidth: 160,
-    background: "#fff", textAlign: "center",
-  },
-  agenteIcon: {
-    width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center",
-    justifyContent: "center", margin: "0 auto 6px", fontWeight: 700, fontSize: 14,
-  },
-  agenteLabel: { fontSize: 12, fontWeight: 600, color: "#374151", margin: "0 0 6px" },
-  agenteLogs: { textAlign: "left" },
-  logLine: { fontSize: 11, color: "#6b7280", margin: "2px 0", lineHeight: 1.3 },
-  arrow: { fontSize: 18, color: "#d1d5db", padding: "20px 6px 0", flexShrink: 0 },
-  resumen: { display: "flex", gap: 12, marginBottom: 20 },
-  resumenCard: {
-    flex: 1, border: "1px solid #e5e7eb", borderRadius: 10, padding: 16,
-    textAlign: "center", background: "#fff",
-  },
-  resumenNum: { fontSize: 28, fontWeight: 700, color: "#111827", display: "block" },
-  resumenLabel: { fontSize: 13, color: "#6b7280" },
-  section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 15, fontWeight: 600, color: "#374151", margin: "0 0 8px" },
-  notif: {
-    fontSize: 14, color: "#1e40af", background: "#eff6ff", padding: "8px 12px",
-    borderRadius: 6, marginBottom: 6, borderLeft: "3px solid #3b82f6",
-  },
-  paso: {
-    fontSize: 14, color: "#374151", padding: "6px 0", display: "flex", alignItems: "flex-start", gap: 8,
-  },
-  pasoNum: {
-    width: 22, height: 22, borderRadius: "50%", background: "#ede9fe", color: "#7c3aed",
-    fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-  },
-  errorLine: { fontSize: 13, color: "#dc2626", margin: "4px 0" },
-  btnPrimario: {
-    padding: "10px 20px", background: "#2563eb", color: "#fff", border: "none",
-    borderRadius: 6, cursor: "pointer", fontSize: 14, fontWeight: 500,
-  },
-  btnSecundario: {
-    padding: "8px 16px", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1",
-    borderRadius: 6, cursor: "pointer", fontSize: 13, flexShrink: 0,
-  },
+function MetricCard({ value, label, accent }) {
+  return (
+    <div style={s.metricCard}>
+      <div style={{ fontSize: 36, color: accent === false ? "rgba(251,191,36,0.8)" : "#fff" }}>{value}</div>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{label}</div>
+    </div>
+  )
+}
+
+const s = {
+  container: { maxWidth: 960, margin: "0 auto", padding: "40px 24px" },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  subtitle: { fontSize: 14, color: "rgba(255,255,255,0.4)" },
+  error: { color: "#ff6b6b", border: "1px solid rgba(255,100,100,0.2)", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
+  btnPrimary: { padding: "14px 28px", background: "#fff", color: "#000", border: "none", fontSize: 14, cursor: "pointer" },
+  btnSec: { padding: "10px 20px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer" },
+  agentRow: { display: "flex", overflowX: "auto", marginBottom: 32, paddingBottom: 8 },
+  agentCard: { border: "1px solid", padding: 14, minWidth: 140, maxWidth: 160 },
+  metricsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 32 },
+  metricCard: { border: "1px solid rgba(255,255,255,0.1)", padding: 24, textAlign: "center" },
+  section: { marginBottom: 20 },
+  sectionTitle: { fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: 12 },
+  notif: { fontSize: 14, color: "rgba(255,255,255,0.7)", padding: "10px 14px", borderLeft: "2px solid rgba(255,255,255,0.2)", marginBottom: 6 },
+  paso: { fontSize: 14, padding: "8px 0", display: "flex", alignItems: "flex-start", gap: 10 },
+  pasoNum: { width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", fontSize: 12, flexShrink: 0 },
 }

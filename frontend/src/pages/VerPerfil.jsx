@@ -2,185 +2,142 @@ export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaci
   if (!perfil) return null
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2>{perfil.nombre_completo}</h2>
-        <div style={styles.completitudContainer}>
-          <div style={{ ...styles.completitudBar, width: `${perfil.completitud}%` }} />
-          <span style={styles.completitudLabel}>{perfil.completitud}% completo</span>
-        </div>
+    <div style={s.container}>
+      <div style={s.hero}>
+        <h1 style={s.title}>Perfil</h1>
+        <p style={s.subtitle}>Gestiona tu información y preferencias</p>
       </div>
 
-      <div style={styles.section}>
-        <h3>Datos personales</h3>
-        <div style={styles.grid}>
-          <Campo label="Email" valor={perfil.email} />
-          <Campo label="Teléfono" valor={perfil.telefono} />
-          <Campo label="Ubicación" valor={perfil.ubicacion} />
+      {/* Profile card */}
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <div style={s.avatar}>{perfil.nombre_completo?.charAt(0) || "?"}</div>
+            <div>
+              <h2 style={{ fontSize: 28, marginBottom: 4 }}>{perfil.nombre_completo}</h2>
+              <p style={s.muted}>{perfil.cargo_actual || "Sin cargo definido"}</p>
+            </div>
+          </div>
+          <button onClick={onEditar} style={s.btnSecondary}>Editar perfil</button>
         </div>
-      </div>
 
-      <div style={styles.section}>
-        <h3>Educación</h3>
-        <div style={styles.grid}>
-          <Campo label="Nivel educativo" valor={perfil.nivel_educativo} />
-          <Campo label="Título" valor={perfil.titulo_educativo} />
-          <Campo label="Institución" valor={perfil.institucion_educativa} />
+        {/* Completitud */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={s.muted}>Completitud del perfil</span>
+            <span style={{ fontSize: 14 }}>{perfil.completitud}%</span>
+          </div>
+          <div style={s.progressContainer}>
+            <div style={{ ...s.progressBar, width: `${perfil.completitud}%` }} />
+          </div>
         </div>
-      </div>
 
-      <div style={styles.section}>
-        <h3>Experiencia</h3>
-        <div style={styles.grid}>
-          <Campo label="Años de experiencia" valor={perfil.experiencia_anos} />
-          <Campo label="Cargo actual" valor={perfil.cargo_actual} />
-          <Campo label="Empresa actual" valor={perfil.empresa_actual} />
+        {/* Info grid */}
+        <div style={s.grid2}>
+          <InfoItem label="Email" value={perfil.email} />
+          <InfoItem label="Teléfono" value={perfil.telefono} />
+          <InfoItem label="Ubicación" value={perfil.ubicacion} />
+          <InfoItem label="Empresa" value={perfil.empresa_actual} />
+          <InfoItem label="Nivel educativo" value={perfil.nivel_educativo} />
+          <InfoItem label="Título" value={perfil.titulo_educativo} />
+          <InfoItem label="Institución" value={perfil.institucion_educativa} />
+          <InfoItem label="Experiencia" value={perfil.experiencia_anos != null ? `${perfil.experiencia_anos} años` : null} />
         </div>
+
         {perfil.resumen_profesional && (
-          <div style={{ marginTop: 8 }}>
-            <strong style={{ fontSize: 13 }}>Resumen:</strong>
-            <p style={{ margin: "4px 0", fontSize: 14, color: "#374151" }}>
+          <div style={{ marginTop: 20, padding: 16, background: "rgba(255,255,255,0.03)" }}>
+            <span style={s.labelSmall}>Resumen profesional</span>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", marginTop: 6, lineHeight: 1.6 }}>
               {perfil.resumen_profesional}
             </p>
           </div>
         )}
       </div>
 
-      <div style={styles.section}>
-        <h3>Habilidades</h3>
-        <div style={styles.skillsContainer}>
+      {/* Skills */}
+      <div style={s.card}>
+        <h3 style={s.sectionTitle}>Habilidades</h3>
+        <div style={s.tags}>
           {perfil.skills?.length > 0 ? (
-            perfil.skills.map((s) => (
-              <span key={s} style={styles.skillTag}>{s}</span>
-            ))
+            perfil.skills.map((sk) => <span key={sk} style={s.tag}>{sk}</span>)
           ) : (
-            <span style={{ color: "#999", fontSize: 14 }}>Sin skills registrados</span>
+            <span style={s.muted}>Sin skills registrados</span>
           )}
         </div>
       </div>
 
-      <div style={styles.section}>
-        <h3>Preferencias laborales</h3>
-        <div style={styles.grid}>
-          <Campo
-            label="Aspiración salarial"
-            valor={
-              perfil.aspiracion_salarial_min || perfil.aspiracion_salarial_max
-                ? `$${(perfil.aspiracion_salarial_min || 0).toLocaleString()} - $${(perfil.aspiracion_salarial_max || 0).toLocaleString()} COP`
-                : null
-            }
-          />
-          <Campo label="Modalidad" valor={perfil.modalidad_preferida} />
-          <Campo label="Disponibilidad" valor={perfil.disponibilidad} />
+      {/* Preferencias */}
+      <div style={s.card}>
+        <h3 style={s.sectionTitle}>Preferencias laborales</h3>
+        <div style={s.grid2}>
+          <InfoItem label="Salario esperado" value={
+            perfil.aspiracion_salarial_min || perfil.aspiracion_salarial_max
+              ? `$${(perfil.aspiracion_salarial_min || 0).toLocaleString()} - $${(perfil.aspiracion_salarial_max || 0).toLocaleString()} COP`
+              : null
+          } />
+          <InfoItem label="Modalidad" value={perfil.modalidad_preferida} />
+          <InfoItem label="Disponibilidad" value={perfil.disponibilidad} />
         </div>
       </div>
 
-      <div style={styles.botones}>
-        <button onClick={onVolver} style={styles.btnSecundario}>
-          ← Inicio
-        </button>
-        <button onClick={onEditar} style={styles.btnSecundario}>
-          Editar perfil
-        </button>
+      {/* Stats */}
+      <div style={s.statsGrid}>
+        <div style={s.statCard}>
+          <div style={s.statValue}>{perfil.skills?.length || 0}</div>
+          <div style={s.muted}>Skills</div>
+        </div>
+        <div style={s.statCard}>
+          <div style={s.statValue}>{perfil.completitud}%</div>
+          <div style={s.muted}>Completitud</div>
+        </div>
+        <div style={s.statCard}>
+          <div style={s.statValue}>{perfil.experiencia_anos || 0}</div>
+          <div style={s.muted}>Años exp.</div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
+        <button onClick={onVolver} style={s.btnSecondary}>&#8592; Inicio</button>
         {onVerRecomendaciones && (
-          <button onClick={onVerRecomendaciones} style={styles.btnPrimario}>
-            Ver vacantes recomendadas →
-          </button>
+          <button onClick={onVerRecomendaciones} style={s.btnPrimary}>Ver vacantes recomendadas &#8594;</button>
         )}
       </div>
     </div>
   )
 }
 
-function Campo({ label, valor }) {
+function InfoItem({ label, value }) {
   return (
-    <div style={{ marginBottom: 4 }}>
-      <span style={{ fontSize: 12, color: "#6b7280" }}>{label}</span>
-      <p style={{ margin: "2px 0", fontSize: 14, color: valor ? "#111827" : "#d1d5db" }}>
-        {valor || "—"}
-      </p>
+    <div style={{ padding: 14, background: "rgba(255,255,255,0.03)" }}>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, color: value ? "#fff" : "rgba(255,255,255,0.15)" }}>{value || "—"}</div>
     </div>
   )
 }
 
-const styles = {
-  container: {
-    maxWidth: 720,
-    margin: "0 auto",
-    padding: "24px 16px",
-    textAlign: "left",
+const s = {
+  container: { maxWidth: 800, margin: "0 auto", padding: "40px 24px" },
+  hero: { marginBottom: 40 },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  subtitle: { fontSize: 18, color: "rgba(255,255,255,0.5)" },
+  card: { border: "1px solid rgba(255,255,255,0.1)", padding: 32, marginBottom: 16 },
+  cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 },
+  avatar: {
+    width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: 24, background: "linear-gradient(135deg, #6366f1, #ec4899)",
   },
-  header: {
-    marginBottom: 20,
-  },
-  section: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: 12,
-  },
-  skillsContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  skillTag: {
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    padding: "4px 10px",
-    borderRadius: 16,
-    fontSize: 13,
-  },
-  completitudContainer: {
-    height: 20,
-    background: "#e5e7eb",
-    borderRadius: 10,
-    position: "relative",
-    overflow: "hidden",
-    marginTop: 8,
-  },
-  completitudBar: {
-    height: "100%",
-    background: "linear-gradient(90deg, #3b82f6, #10b981)",
-    borderRadius: 10,
-    transition: "width 0.3s ease",
-  },
-  completitudLabel: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#1f2937",
-  },
-  botones: {
-    display: "flex",
-    gap: 10,
-    marginTop: 20,
-  },
-  btnPrimario: {
-    padding: "10px 20px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 500,
-  },
-  btnSecundario: {
-    padding: "10px 20px",
-    background: "#f1f5f9",
-    color: "#334155",
-    border: "1px solid #cbd5e1",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 14,
-  },
+  sectionTitle: { fontSize: 16, color: "rgba(255,255,255,0.8)", marginBottom: 16 },
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
+  labelSmall: { fontSize: 12, color: "rgba(255,255,255,0.4)" },
+  muted: { color: "rgba(255,255,255,0.4)", fontSize: 14 },
+  tags: { display: "flex", flexWrap: "wrap", gap: 8 },
+  tag: { padding: "6px 14px", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13 },
+  statsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 16 },
+  statCard: { border: "1px solid rgba(255,255,255,0.1)", padding: 24, textAlign: "center" },
+  statValue: { fontSize: 36, marginBottom: 4 },
+  progressContainer: { height: 3, background: "rgba(255,255,255,0.1)" },
+  progressBar: { height: "100%", background: "#fff", transition: "width 0.3s" },
+  btnPrimary: { padding: "14px 28px", background: "#fff", color: "#000", border: "none", fontSize: 14, cursor: "pointer" },
+  btnSecondary: { padding: "12px 24px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 14, cursor: "pointer" },
 }

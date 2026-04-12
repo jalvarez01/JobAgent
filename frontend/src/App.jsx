@@ -1,6 +1,7 @@
 import { useState } from "react"
 import CrearPerfil from "./pages/CrearPerfil"
 import VerPerfil from "./pages/VerPerfil"
+import EditarPerfil from "./pages/EditarPerfil"
 import Recomendaciones from "./pages/Recomendaciones"
 import DetalleVacante from "./pages/DetalleVacante"
 import Tablero from "./pages/Tablero"
@@ -17,42 +18,72 @@ function App() {
     setPage("ver")
   }
 
+  const handlePerfilActualizado = (perfil) => {
+    setPerfilActual(perfil)
+    setPage("ver")
+  }
+
   const handleVerDetalle = (vacante) => {
     setVacanteSeleccionada(vacante)
     setPage("detalle")
   }
 
+  const navItems = [
+    ...(perfilActual ? [
+      { key: "ver", label: "Perfil" },
+      { key: "recomendaciones", label: "Vacantes" },
+      { key: "tablero", label: "Tablero" },
+      { key: "pipeline", label: "Pipeline" },
+    ] : []),
+    { key: "admin", label: "Admin" },
+  ]
+
   return (
-    <div style={styles.app}>
-      <header style={styles.header}>
-        <h1 style={styles.logo} onClick={() => setPage(perfilActual ? "ver" : "crear")}>
-          JobAgent
-        </h1>
-        <span style={styles.badge}>MVP</span>
+    <div>
+      {/* Navigation */}
+      <nav style={s.nav}>
+        <div style={s.navInner}>
+          <span
+            style={s.logo}
+            onClick={() => setPage(perfilActual ? "ver" : "crear")}
+          >
+            JobAgent
+          </span>
 
-        <nav style={styles.nav}>
-          {perfilActual && (
-            <>
-              <NavBtn label="Perfil" active={page === "ver"} onClick={() => setPage("ver")} />
-              <NavBtn label="Vacantes" active={page === "recomendaciones"} onClick={() => setPage("recomendaciones")} />
-              <NavBtn label="Tablero" active={page === "tablero"} onClick={() => setPage("tablero")} />
-              <NavBtn label="Pipeline" active={page === "pipeline"} onClick={() => setPage("pipeline")} purple />
-            </>
-          )}
-          <NavBtn label="Admin" active={page === "admin"} onClick={() => setPage("admin")} admin />
-        </nav>
-      </header>
+          <div style={s.navLinks}>
+            {navItems.map((item) => (
+              <span
+                key={item.key}
+                onClick={() => setPage(item.key)}
+                style={{
+                  ...s.navLink,
+                  color: page === item.key ? "#fff" : "rgba(255,255,255,0.5)",
+                  borderBottom: page === item.key ? "1px solid #fff" : "1px solid transparent",
+                }}
+              >
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </nav>
 
-      <main>
-        {page === "crear" && (
-          <CrearPerfil onPerfilCreado={handlePerfilCreado} />
-        )}
+      {/* Content */}
+      <main style={s.main}>
+        {page === "crear" && <CrearPerfil onPerfilCreado={handlePerfilCreado} />}
         {page === "ver" && (
           <VerPerfil
             perfil={perfilActual}
-            onEditar={() => setPage("crear")}
+            onEditar={() => setPage("editar")}
             onVolver={() => setPage("crear")}
             onVerRecomendaciones={() => setPage("recomendaciones")}
+          />
+        )}
+        {page === "editar" && perfilActual && (
+          <EditarPerfil
+            perfil={perfilActual}
+            onPerfilActualizado={handlePerfilActualizado}
+            onCancelar={() => setPage("ver")}
           />
         )}
         {page === "recomendaciones" && (
@@ -70,10 +101,7 @@ function App() {
           />
         )}
         {page === "tablero" && (
-          <Tablero
-            perfil={perfilActual}
-            onVolver={() => setPage("ver")}
-          />
+          <Tablero perfil={perfilActual} onVolver={() => setPage("ver")} />
         )}
         {page === "pipeline" && (
           <PipelineDashboard
@@ -83,67 +111,33 @@ function App() {
           />
         )}
         {page === "admin" && (
-          <AdminVacantes
-            onVolver={() => setPage(perfilActual ? "ver" : "crear")}
-          />
+          <AdminVacantes onVolver={() => setPage(perfilActual ? "ver" : "crear")} />
         )}
       </main>
     </div>
   )
 }
 
-function NavBtn({ label, active, onClick, purple, admin }) {
-  const bgActive = admin ? "#fef3c7" : purple ? "#ede9fe" : "#eff6ff"
-  const colorActive = admin ? "#92400e" : purple ? "#7c3aed" : "#2563eb"
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "6px 14px",
-        background: active ? bgActive : "none",
-        color: active ? colorActive : "#6b7280",
-        border: admin && !active ? "1px dashed #d1d5db" : "none",
-        borderRadius: 6,
-        cursor: "pointer",
-        fontSize: 14,
-        fontWeight: active ? 500 : 400,
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
-const styles = {
-  app: { minHeight: "100vh" },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "12px 24px",
-    borderBottom: "1px solid #e5e7eb",
-    flexWrap: "wrap",
+const s = {
+  nav: {
+    position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    background: "rgba(0,0,0,0.85)", backdropFilter: "blur(20px)",
+  },
+  navInner: {
+    maxWidth: 1200, margin: "0 auto", padding: "20px 32px",
+    display: "flex", alignItems: "center", justifyContent: "space-between",
   },
   logo: {
-    fontSize: 22,
-    fontWeight: 600,
-    margin: 0,
-    cursor: "pointer",
-    color: "#111827",
+    fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer",
+    transition: "opacity 0.2s",
   },
-  badge: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#7c3aed",
-    background: "#ede9fe",
-    padding: "2px 8px",
-    borderRadius: 10,
+  navLinks: { display: "flex", gap: 32 },
+  navLink: {
+    fontSize: 14, cursor: "pointer", paddingBottom: 4,
+    letterSpacing: "0.02em", transition: "color 0.2s",
   },
-  nav: {
-    display: "flex",
-    gap: 4,
-    marginLeft: "auto",
-  },
+  main: { paddingTop: 80 },
 }
 
 export default App
