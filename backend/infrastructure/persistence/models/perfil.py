@@ -1,4 +1,6 @@
 import uuid
+import hashlib
+import secrets
 from datetime import datetime, timezone
 
 from sqlalchemy import String, Text, Integer, Float, DateTime, JSON
@@ -11,6 +13,22 @@ def _utcnow():
     return datetime.now(timezone.utc)
 
 
+def hash_password(password: str) -> str:
+    """Genera hash seguro de la contraseña con salt."""
+    salt = secrets.token_hex(16)
+    hashed = hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
+    return f"{salt}:{hashed}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Verifica la contraseña contra el hash almacenado."""
+    if ":" not in stored_hash:
+        return False
+    salt, hashed = stored_hash.split(":", 1)
+    check = hashlib.sha256(f"{salt}{password}".encode()).hexdigest()
+    return check == hashed
+
+
 class PerfilModel(Base):
     __tablename__ = "perfiles"
 
@@ -21,6 +39,9 @@ class PerfilModel(Base):
     email: Mapped[str] = mapped_column(String(200), unique=True)
     telefono: Mapped[str | None] = mapped_column(String(30), nullable=True)
     ubicacion: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Autenticación
+    password_hash: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # Perfil profesional
     resumen_profesional: Mapped[str | None] = mapped_column(Text, nullable=True)

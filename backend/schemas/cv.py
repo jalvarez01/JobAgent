@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class NivelEducativo(str, Enum):
@@ -35,6 +35,7 @@ class Disponibilidad(str, Enum):
 class PerfilCreate(BaseModel):
     nombre_completo: str = Field(..., min_length=2, max_length=200)
     email: str = Field(..., min_length=5, max_length=200)
+    password: str = Field(..., min_length=8, max_length=100)
     telefono: Optional[str] = Field(None, max_length=30)
     ubicacion: Optional[str] = Field(None, max_length=100)
 
@@ -117,7 +118,6 @@ class PerfilResponse(BaseModel):
 # ---------- Análisis estructurado del CV ----------
 
 class CVAnalisisEstructurado(BaseModel):
-    """Resultado del análisis de CV por IA, en formato estructurado."""
     nombre_completo: Optional[str] = None
     email: Optional[str] = None
     telefono: Optional[str] = None

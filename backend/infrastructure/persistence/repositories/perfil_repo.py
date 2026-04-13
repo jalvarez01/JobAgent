@@ -11,7 +11,17 @@ class PerfilRepository:
         self.db = db
 
     def create(self, data: PerfilCreate) -> PerfilModel:
-        perfil = PerfilModel(**data.model_dump(exclude_none=False))
+        data_dict = data.model_dump(exclude_none=False)
+        data_dict.pop("password", None)  # No guardar password plano
+        perfil = PerfilModel(**data_dict)
+        self.db.add(perfil)
+        self.db.commit()
+        self.db.refresh(perfil)
+        return perfil
+
+    def create_from_dict(self, data: dict) -> PerfilModel:
+        """Crea perfil desde dict (usado por el servicio cuando ya hasheó el password)."""
+        perfil = PerfilModel(**data)
         self.db.add(perfil)
         self.db.commit()
         self.db.refresh(perfil)

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.config import ALLOWED_ORIGINS, DATA_DIR
 from backend.infrastructure.persistence.database import init_db, SessionLocal
 from backend.infrastructure.persistence.repositories.vacante_repo import VacanteRepository
-from backend.api import cv, perfil, vacantes, postulaciones, trazabilidad, pipeline
+from backend.api import cv, perfil, vacantes, postulaciones, trazabilidad, pipeline, auth
 
 app = FastAPI(
     title="JobAgent API",
@@ -19,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(cv.router, prefix="/cv", tags=["CV"])
 app.include_router(perfil.router, prefix="/perfiles", tags=["Perfiles"])
 app.include_router(vacantes.router, prefix="/vacantes", tags=["Vacantes"])

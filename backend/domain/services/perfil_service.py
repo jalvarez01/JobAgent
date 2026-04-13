@@ -3,6 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from backend.infrastructure.persistence.repositories.perfil_repo import PerfilRepository
+from backend.infrastructure.persistence.models.perfil import hash_password, verify_password
 from backend.schemas.cv import PerfilCreate, PerfilUpdate, PerfilResponse
 
 
@@ -36,7 +37,24 @@ class PerfilService:
         if existente:
             raise ValueError(f"Ya existe un perfil con el email {data.email}")
 
-        perfil = self.repo.create(data)
+        # Extraer y hashear password antes de guardar
+        data_dict = data.model_dump(exclude_none=False)
+        raw_password = data_dict.pop("password", None)
+        if raw_password:
+            data_dict["password_hash"] = hash_password(raw_password)
+
+        perfil = self.repo.create_from_dict(data_dict)
+        return self._to_response(perfil)
+
+    def login(self, email: str, password: str):
+        """Valida credenciales y retorna el perfil si son correctas."""
+        perfil = self.repo.get_by_email(email)
+        if not perfil:
+            return None
+        if not perfil.password_hash:
+            return None
+        if not verify_password(password, perfil.password_hash):
+            return None
         return self._to_response(perfil)
 
     def obtener_perfil(self, perfil_id: str) -> Optional[PerfilResponse]:

@@ -29,7 +29,8 @@ const DISPONIBILIDADES = [
 ]
 
 const INITIAL_FORM = {
-  nombre_completo: "", email: "", telefono: "", ubicacion: "",
+  nombre_completo: "", email: "", password: "", confirmPassword: "",
+  telefono: "", ubicacion: "",
   resumen_profesional: "", nivel_educativo: "", titulo_educativo: "",
   institucion_educativa: "", experiencia_anos: "", cargo_actual: "",
   empresa_actual: "", skills: [], aspiracion_salarial_min: "",
@@ -105,7 +106,39 @@ export default function CrearPerfil({ onPerfilCreado }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true); setError("")
+    setError("")
+
+    // Validación client-side
+    if (!form.nombre_completo.trim()) {
+      setError("Por favor ingresa tu nombre completo")
+      return
+    }
+    if (!form.email.trim()) {
+      setError("Por favor ingresa tu email")
+      return
+    }
+    if (form.email.trim() && !form.email.includes("@")) {
+      setError("Por favor ingresa un email válido")
+      return
+    }
+    if (!form.password || form.password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres")
+      return
+    }
+    if (!/[A-Z]/.test(form.password)) {
+      setError("La contraseña debe tener al menos una letra mayúscula")
+      return
+    }
+    if (!/[a-z]/.test(form.password)) {
+      setError("La contraseña debe tener al menos una letra minúscula")
+      return
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Las contraseñas no coinciden")
+      return
+    }
+
+    setLoading(true)
     try {
       const payload = {
         ...form,
@@ -116,7 +149,16 @@ export default function CrearPerfil({ onPerfilCreado }) {
         modalidad_preferida: form.modalidad_preferida || null,
         disponibilidad: form.disponibilidad || null,
       }
+      delete payload.confirmPassword
       const perfil = await crearPerfil(payload)
+
+      // Guardar sesión
+      localStorage.setItem("jobagent_session", JSON.stringify({
+        perfil_id: perfil.id,
+        email: perfil.email,
+        nombre: perfil.nombre_completo,
+      }))
+
       if (onPerfilCreado) onPerfilCreado(perfil)
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
@@ -240,6 +282,8 @@ export default function CrearPerfil({ onPerfilCreado }) {
               <Field label="Email *" name="email" type="email" value={form.email} onChange={handleChange} required />
               <Field label="Teléfono" name="telefono" value={form.telefono} onChange={handleChange} />
               <Field label="Ubicación" name="ubicacion" value={form.ubicacion} onChange={handleChange} placeholder="Ej: Medellín, Antioquia" />
+              <Field label="Contraseña *" name="password" type="password" value={form.password} onChange={handleChange} placeholder="Mínimo 8 caracteres, mayúscula y minúscula" />
+              <Field label="Confirmar contraseña *" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="Repite tu contraseña" />
             </div>
           </Section>
 
