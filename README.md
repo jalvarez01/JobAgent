@@ -1,0 +1,372 @@
+# JobAgent - Profile Manager
+
+## Student Information
+- **Full Name:** Juan José Álvarez Ocampo, Cristian Bolaños,Leovanis Buelvas, Juan David Bedoya, Diego Aza
+- **Class:** Ingeniería de Software
+- **Course:** 5131
+- **University:** Universidad EAFIT
+- **Semester:** 2026-1
+
+---
+
+## Project Description
+
+JobAgent is an intelligent job search assistant built for the Magneto365 engineering challenge. It shifts the traditional job search model — where the candidate does all the work — to a proactive system where AI agents manage the profile, recommend opportunities, and automate operational tasks.
+
+**Core promise:** *"Give me your resume and your expectations; JobAgent gets you interviews."*
+
+### Key Features
+- **CV Upload & AI Analysis:** Upload PDF/DOCX resumes. AI extracts structured data (skills, education, experience) and pre-fills the candidate profile.
+- **Smart Recommendations:** Scoring engine matches candidate skills against job requirements with salary and modality bonuses.
+- **Automated Applications:** LangGraph agent pipeline auto-applies to jobs above a 50% match threshold.
+- **Kanban Tracking Board:** Track application status across 5 stages (applied → under review → interview → offer → rejected).
+- **Admin Panel:** Separate admin interface at `/admin` for creating, editing, and managing job vacancies.
+- **Authentication:** Secure registration and login with hashed passwords.
+
+---
+
+## Architecture
+
+The system follows **Clean Architecture** with an agentic AI pipeline:
+
+```
+Frontend (React + Vite)
+    ↓ HTTP REST
+Backend (FastAPI + Python)
+    ├── API Layer (routers)
+    ├── Domain Layer
+    │   ├── Services (PerfilService, RecomendacionService, PostulacionService)
+    │   └── Agents (5 LangGraph nodes)
+    ├── Infrastructure Layer
+    │   ├── Persistence (SQLAlchemy + SQLite)
+    │   └── LLM (Groq Cloud — Llama 3.3-70b)
+    └── Graph Layer (LangGraph StateGraph)
+```
+
+**Agent Pipeline:** Perfil → Vacantes → Recomendación → Postulación → Seguimiento
+
+---
+
+## Environment
+- **Operating Systems:** macOS Tahoe 26.0.1 (Apple Silicon M4) / Windows 11 Pro / Ubuntu 24.04
+- **Processor:** Apple M4 / Intel64 Family
+- **Memory:** 16 GB RAM
+- **Terminal:** zsh 5.9 (macOS) / PowerShell 5.1 (Windows) / bash (Linux)
+
+---
+
+## Prerequisites
+
+Before starting, make sure you have the following installed:
+
+1. **Python 3.11 or higher**
+   - Check: `python --version` or `python3 --version`
+   - Download: https://www.python.org/downloads/
+
+2. **Node.js 18 or higher**
+   - Check: `node --version`
+   - Download: https://nodejs.org/
+
+3. **npm** (comes with Node.js)
+   - Check: `npm --version`
+
+4. **pip** (comes with Python)
+   - Check: `pip --version` or `pip3 --version`
+
+5. **Git**
+   - Check: `git --version`
+   - Download: https://git-scm.com/downloads
+
+6. **Groq API Key** (for AI analysis)
+   - Get one at: https://console.groq.com/keys
+
+---
+
+## Installation and Setup
+
+### Step 1: Get the Code
+
+```bash
+git clone https://github.com/jalvarez01/JobAgent.git
+cd JobAgent
+```
+
+### Step 2: Backend Setup — Create a Virtual Environment
+
+**On Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+**On macOS/Linux:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+When the virtual environment is activated, you'll see `(venv)` at the beginning of your command line.
+
+### Step 3: Install Backend Dependencies
+
+With the virtual environment activated:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+This will install:
+- FastAPI + Uvicorn (web server)
+- SQLAlchemy (database ORM)
+- Pydantic (data validation)
+- LangChain + LangGraph (AI agent orchestration)
+- LangChain-Groq (LLM provider)
+- PyMuPDF4LLM (PDF text extraction)
+- python-dotenv (environment variables)
+- And other dependencies
+
+### Step 4: Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+**On Windows:**
+```bash
+echo GROQ_API_KEY=your_groq_api_key_here > .env
+```
+
+**On macOS/Linux:**
+```bash
+echo "GROQ_API_KEY=your_groq_api_key_here" > .env
+```
+
+Replace `your_groq_api_key_here` with your actual Groq API key from https://console.groq.com/keys.
+
+### Step 5: Install Frontend Dependencies
+
+Open a **new terminal** (keep the backend terminal open):
+
+```bash
+cd frontend
+npm install
+```
+
+### Step 6: Run the Backend Server
+
+In the **first terminal** (with virtual environment activated), from the project root:
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+You'll see:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     [seed] 20 vacantes cargadas desde CSV
+```
+
+The database and tables are created automatically on first startup. 20 sample Colombian job vacancies are loaded from `data/vacantes.csv`.
+
+### Step 7: Run the Frontend Server
+
+In the **second terminal**, from the `frontend/` directory:
+
+```bash
+npm run dev
+```
+
+You'll see:
+```
+VITE v8.x.x  ready in XXX ms
+
+  ➜  Local:   http://localhost:5173/
+```
+
+### Step 8: Open the Application
+
+Open your web browser and visit:
+
+- **Main application (candidates):** http://localhost:5173/
+- **Admin panel (vacancy management):** http://localhost:5173/admin
+- **API documentation (Swagger):** http://127.0.0.1:8000/docs
+- **API health check:** http://127.0.0.1:8000/health
+
+---
+
+## How to Use
+
+### As a Candidate
+
+1. **Create an account:** Click "Crear perfil" → upload your CV (PDF/DOCX) → the AI extracts your data automatically → set a password → save.
+2. **Login:** Use your email and password to log in. Your session persists across browser restarts.
+3. **View recommendations:** Go to "Vacantes" to see jobs ranked by your skill match percentage.
+4. **Search & filter:** Use the search bar to find specific jobs. Filter by modality, location, or salary range.
+5. **Apply:** Click on a vacancy → "Postularme a esta vacante."
+6. **Track progress:** Go to "Tablero" to see your applications in a Kanban board.
+7. **Run the pipeline:** Go to "Pipeline" to execute the full AI agent flow (analyze profile → load vacancies → recommend → auto-apply → generate next steps).
+
+### As an Admin (Magneto)
+
+1. Navigate to http://localhost:5173/admin
+2. Create, edit, or delete job vacancies.
+3. Set skills as requirements (separated by `;`) — these are used for candidate matching.
+
+---
+
+## Project Structure
+
+```
+JobAgent/
+├── backend/
+│   ├── api/                  # FastAPI routers (auth, cv, perfil, vacantes, postulaciones, trazabilidad, pipeline)
+│   ├── domain/
+│   │   ├── agents/           # 5 LangGraph agents + CV loader + analyzer
+│   │   └── services/         # PerfilService, RecomendacionService, PostulacionService
+│   ├── graph/                # LangGraph: state, builder, runner, checkpointer
+│   ├── infrastructure/
+│   │   ├── persistence/      # SQLAlchemy models, repositories, database.py
+│   │   ├── llm/              # Groq provider
+│   │   └── loaders/          # PDF and CSV loaders
+│   ├── schemas/              # Pydantic schemas (cv, vacante, postulacion, traza, auth)
+│   ├── config.py             # Centralized configuration
+│   └── main.py               # FastAPI entry point
+├── frontend/
+│   └── src/
+│       ├── api/              # HTTP clients (auth, cv, perfil, vacantes, postulaciones)
+│       ├── pages/            # React pages (Login, CrearPerfil, VerPerfil, EditarPerfil,
+│       │                     #   Recomendaciones, DetalleVacante, Tablero, PipelineDashboard, AdminVacantes)
+│       ├── App.jsx           # Main app with auth flow and routing
+│       └── index.css         # Global dark theme styles
+├── data/
+│   ├── vacantes.csv          # 20 seed vacancies (Colombian companies)
+│   └── uploads/              # Uploaded CV files
+├── storage/                  # CV analysis results
+└── tests/                    # Test suites (test_agents, test_api, test_services)
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/login` | Authenticate user |
+| `POST` | `/cv/upload` | Upload CV (PDF/DOCX) |
+| `POST` | `/cv/analizar-estructurado` | Analyze CV with AI (structured JSON) |
+| `POST` | `/perfiles/` | Create profile (with password) |
+| `GET` | `/perfiles/{id}` | Get profile |
+| `PUT` | `/perfiles/{id}` | Update profile |
+| `GET` | `/vacantes/` | List active vacancies |
+| `GET` | `/vacantes/?q=python` | Search vacancies |
+| `POST` | `/vacantes/` | Create vacancy (admin) |
+| `PUT` | `/vacantes/{id}` | Update vacancy (admin) |
+| `DELETE` | `/vacantes/{id}` | Delete vacancy (admin) |
+| `GET` | `/vacantes/recomendaciones/{perfil_id}` | Get recommendations for profile |
+| `POST` | `/postulaciones/` | Apply to vacancy |
+| `GET` | `/postulaciones/perfil/{perfil_id}` | List applications |
+| `PATCH` | `/postulaciones/{id}/estado` | Change application status |
+| `GET` | `/trazas/{perfil_id}` | Get activity history |
+| `POST` | `/pipeline/ejecutar` | Run full agent pipeline |
+
+Full interactive documentation at: http://127.0.0.1:8000/docs
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, JavaScript/JSX |
+| Backend | FastAPI, Python 3.11+, Uvicorn |
+| Database | SQLite (SQLAlchemy ORM) |
+| AI/Agents | LangChain, LangGraph, Groq Cloud (Llama 3.3-70b) |
+| CV Parsing | PyMuPDF4LLM, Docx2txt |
+| Validation | Pydantic v2 |
+
+---
+
+## Useful Commands
+
+### Stop the Servers
+Press `Ctrl + C` in each terminal (backend and frontend).
+
+### Deactivate the Virtual Environment
+```bash
+deactivate
+```
+
+### Reset the Database
+```bash
+rm data/jobagent.db
+```
+Tables are recreated automatically on the next backend startup.
+
+### Run on a Different Port
+
+**Backend:**
+```bash
+uvicorn backend.main:app --reload --port 9000
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev -- --port 3000
+```
+
+### View API Documentation
+Visit http://127.0.0.1:8000/docs for interactive Swagger UI.
+
+---
+
+## Common Troubleshooting
+
+### Error: "python is not recognized as a command"
+- **Solution:** Make sure Python is installed and added to your system's PATH.
+- Try using `python3` instead of `python`.
+
+### Error: "No module named 'backend'"
+- **Solution:** Make sure you're running `uvicorn` from the **project root** (`JobAgent/`), not from inside `backend/`.
+
+### Error: "npm: command not found"
+- **Solution:** Install Node.js from https://nodejs.org/. npm comes bundled with it.
+
+### Error: "Port 5173 is in use"
+- **Solution:** Vite will automatically try the next port (5174, 5175...). Check the terminal output for the actual URL.
+
+### Error: "GROQ_API_KEY not configured"
+- **Solution:** Create a `.env` file in the project root with your Groq API key. The CV analysis feature won't work without it, but the rest of the app will.
+
+### Error: "422 Unprocessable Entity" when creating a profile
+- **Solution:** Make sure all required fields are filled: name, email, and password (minimum 8 characters, at least one uppercase and one lowercase letter).
+
+### Error: "Port 8000 is already in use"
+- **Solution:** Another process is using port 8000. Either close it or use a different port:
+```bash
+uvicorn backend.main:app --reload --port 9000
+```
+Then update `VITE_API_URL` in your frontend `.env` accordingly.
+
+### Database issues after schema changes
+- **Solution:** Delete the database and restart:
+```bash
+rm data/jobagent.db
+uvicorn backend.main:app --reload
+```
+
+### Frontend shows blank page
+- **Solution:** Open the browser developer console (F12 or Cmd+Option+C in Safari) and check for import errors. The most common cause is a missing file in `frontend/src/pages/`.
+
+---
+
+## References
+- [Magneto365 — Profile Manager Case Study (v1.0, 01/02/2026)](https://www.magnetoempleos.com)
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [React Documentation](https://react.dev/)
+- [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/)
+- [Groq API Documentation](https://console.groq.com/docs/)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+
+---
+
+**Last updated:** April 2026
