@@ -1,7 +1,7 @@
 # JobAgent - Profile Manager
 
 ## Student Information
-- **Full Name:** Juan José Álvarez Ocampo, Cristian Bolaños,Leovanis Buelvas, Juan David Bedoya, Diego Aza
+- **Full Name:** Juan José Álvarez Ocampo, Cristian Bolaños, Leovanis Buelvas, Juan David Bedoya, Diego Aza
 - **Class:** Ingeniería de Software
 - **Course:** 5131
 - **University:** Universidad EAFIT
