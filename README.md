@@ -30,122 +30,17 @@ JobAgent is an intelligent job search assistant built for the Magneto365 enginee
 The system follows **Clean Architecture** with an agentic AI pipeline:
 
 ```
-jobagent
-├─ backend
-│  ├─ api
-│  │  ├─ cv.py
-│  │  ├─ perfil.py
-│  │  ├─ pipeline.py
-│  │  ├─ postulaciones.py
-│  │  ├─ trazabilidad.py
-│  │  ├─ vacantes.py
-│  │  └─ __init__.py
-│  ├─ config.py
-│  ├─ dependencies.py
-│  ├─ domain
-│  │  ├─ agents
-│  │  │  ├─ analizar.py
-│  │  │  ├─ cargar.py
-│  │  │  ├─ perfil_agent.py
-│  │  │  ├─ postulacion_agent.py
-│  │  │  ├─ recomendacion_agent.py
-│  │  │  ├─ seguimiento_agent.py
-│  │  │  ├─ vacantes_agent.py
-│  │  │  ├─ vacantes_pdf.py
-│  │  │  └─ __init__.py
-│  │  ├─ services
-│  │  │  ├─ perfil_service.py
-│  │  │  ├─ postulacion_service.py
-│  │  │  ├─ recomendacion_service.py
-│  │  │  └─ __init__.py
-│  │  └─ __init__.py
-│  ├─ graph
-│  │  ├─ builder.py
-│  │  ├─ checkpointer.py
-│  │  ├─ runner.py
-│  │  ├─ state.py
-│  │  └─ __init__.py
-│  ├─ infrastructure
-│  │  ├─ llm
-│  │  │  ├─ groq_provider.py
-│  │  │  └─ __init__.py
-│  │  ├─ loaders
-│  │  │  ├─ csv_loader.py
-│  │  │  ├─ pdf_loader.py
-│  │  │  └─ __init__.py
-│  │  ├─ persistence
-│  │  │  ├─ database.py
-│  │  │  ├─ models
-│  │  │  │  ├─ perfil.py
-│  │  │  │  ├─ postulacion.py
-│  │  │  │  ├─ traza.py
-│  │  │  │  ├─ vacante.py
-│  │  │  │  └─ __init__.py
-│  │  │  ├─ repositories
-│  │  │  │  ├─ perfil_repo.py
-│  │  │  │  ├─ postulacion_repo.py
-│  │  │  │  ├─ vacante_repo.py
-│  │  │  │  └─ __init__.py
-│  │  │  └─ __init__.py
-│  │  └─ __init__.py
-│  ├─ main.py
-│  ├─ requirements.txt
-│  ├─ schemas
-│  │  ├─ cv.py
-│  │  ├─ postulacion.py
-│  │  ├─ traza.py
-│  │  ├─ vacante.py
-│  │  └─ __init__.py
-│  └─ __init__.py
-├─ data
-│  ├─ jobagent.db
-│  ├─ uploads
-│  │  ├─ 701e43c3a9584240900b1283639e5214_CV_Inglés.pdf
-│  │  └─ ec9723e7e72741bf963c068984f84c5e_CV_Inglés.pdf
-│  └─ vacantes.csv
-├─ frontend
-│  ├─ eslint.config.js
-│  ├─ index.html
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ public
-│  │  ├─ favicon.svg
-│  │  └─ icons.svg
-│  ├─ README.md
-│  ├─ src
-│  │  ├─ api
-│  │  │  ├─ cv.js
-│  │  │  ├─ perfil.js
-│  │  │  ├─ postulaciones.js
-│  │  │  └─ vacantes.js
-│  │  ├─ App.css
-│  │  ├─ App.jsx
-│  │  ├─ assets
-│  │  │  ├─ hero.png
-│  │  │  ├─ react.svg
-│  │  │  └─ vite.svg
-│  │  ├─ index.css
-│  │  ├─ main.jsx
-│  │  └─ pages
-│  │     ├─ AdminVacantes.jsx
-│  │     ├─ CrearPerfil.jsx
-│  │     ├─ DetalleVacante.jsx
-│  │     ├─ PipelineDashboard.jsx
-│  │     ├─ Recomendaciones.jsx
-│  │     ├─ SubirCV.jsx
-│  │     ├─ Tablero.jsx
-│  │     └─ VerPerfil.jsx
-│  └─ vite.config.js
-├─ pages
-│  └─ Mi perfil.py
-├─ README.md
-├─ src
-│  └─ agents
-└─ storage
-   ├─ analisis_05290bdd72344628b45c44aaa8930452.txt
-   ├─ analisis_5f8b0f110b1a4b31b0339d64f26e25c6.txt
-   ├─ analisis_7e2299cfb92f44bd9414602a8a016fe7.txt
-   └─ analisis_fe037744e00e4845bb2af893c398b8e1.txt
+Frontend (React + Vite)
+    ↓ HTTP REST
+Backend (FastAPI + Python)
+    ├── API Layer (routers)
+    ├── Domain Layer
+    │   ├── Services (PerfilService, RecomendacionService, PostulacionService)
+    │   └── Agents (5 LangGraph nodes)
+    ├── Infrastructure Layer
+    │   ├── Persistence (SQLAlchemy + SQLite)
+    │   └── LLM (Groq Cloud — Llama 3.3-70b)
+    └── Graph Layer (LangGraph StateGraph)
 
 ```
 
@@ -321,32 +216,122 @@ Open your web browser and visit:
 ## Project Structure
 
 ```
-JobAgent/
-├── backend/
-│   ├── api/                  # FastAPI routers (auth, cv, perfil, vacantes, postulaciones, trazabilidad, pipeline)
-│   ├── domain/
-│   │   ├── agents/           # 5 LangGraph agents + CV loader + analyzer
-│   │   └── services/         # PerfilService, RecomendacionService, PostulacionService
-│   ├── graph/                # LangGraph: state, builder, runner, checkpointer
-│   ├── infrastructure/
-│   │   ├── persistence/      # SQLAlchemy models, repositories, database.py
-│   │   ├── llm/              # Groq provider
-│   │   └── loaders/          # PDF and CSV loaders
-│   ├── schemas/              # Pydantic schemas (cv, vacante, postulacion, traza, auth)
-│   ├── config.py             # Centralized configuration
-│   └── main.py               # FastAPI entry point
-├── frontend/
-│   └── src/
-│       ├── api/              # HTTP clients (auth, cv, perfil, vacantes, postulaciones)
-│       ├── pages/            # React pages (Login, CrearPerfil, VerPerfil, EditarPerfil,
-│       │                     #   Recomendaciones, DetalleVacante, Tablero, PipelineDashboard, AdminVacantes)
-│       ├── App.jsx           # Main app with auth flow and routing
-│       └── index.css         # Global dark theme styles
-├── data/
-│   ├── vacantes.csv          # 20 seed vacancies (Colombian companies)
-│   └── uploads/              # Uploaded CV files
-├── storage/                  # CV analysis results
-└── tests/                    # Test suites (test_agents, test_api, test_services)
+jobagent
+├─ backend
+│  ├─ api
+│  │  ├─ cv.py
+│  │  ├─ perfil.py
+│  │  ├─ pipeline.py
+│  │  ├─ postulaciones.py
+│  │  ├─ trazabilidad.py
+│  │  ├─ vacantes.py
+│  │  └─ __init__.py
+│  ├─ config.py
+│  ├─ dependencies.py
+│  ├─ domain
+│  │  ├─ agents
+│  │  │  ├─ analizar.py
+│  │  │  ├─ cargar.py
+│  │  │  ├─ perfil_agent.py
+│  │  │  ├─ postulacion_agent.py
+│  │  │  ├─ recomendacion_agent.py
+│  │  │  ├─ seguimiento_agent.py
+│  │  │  ├─ vacantes_agent.py
+│  │  │  ├─ vacantes_pdf.py
+│  │  │  └─ __init__.py
+│  │  ├─ services
+│  │  │  ├─ perfil_service.py
+│  │  │  ├─ postulacion_service.py
+│  │  │  ├─ recomendacion_service.py
+│  │  │  └─ __init__.py
+│  │  └─ __init__.py
+│  ├─ graph
+│  │  ├─ builder.py
+│  │  ├─ checkpointer.py
+│  │  ├─ runner.py
+│  │  ├─ state.py
+│  │  └─ __init__.py
+│  ├─ infrastructure
+│  │  ├─ llm
+│  │  │  ├─ groq_provider.py
+│  │  │  └─ __init__.py
+│  │  ├─ loaders
+│  │  │  ├─ csv_loader.py
+│  │  │  ├─ pdf_loader.py
+│  │  │  └─ __init__.py
+│  │  ├─ persistence
+│  │  │  ├─ database.py
+│  │  │  ├─ models
+│  │  │  │  ├─ perfil.py
+│  │  │  │  ├─ postulacion.py
+│  │  │  │  ├─ traza.py
+│  │  │  │  ├─ vacante.py
+│  │  │  │  └─ __init__.py
+│  │  │  ├─ repositories
+│  │  │  │  ├─ perfil_repo.py
+│  │  │  │  ├─ postulacion_repo.py
+│  │  │  │  ├─ vacante_repo.py
+│  │  │  │  └─ __init__.py
+│  │  │  └─ __init__.py
+│  │  └─ __init__.py
+│  ├─ main.py
+│  ├─ requirements.txt
+│  ├─ schemas
+│  │  ├─ cv.py
+│  │  ├─ postulacion.py
+│  │  ├─ traza.py
+│  │  ├─ vacante.py
+│  │  └─ __init__.py
+│  └─ __init__.py
+├─ data
+│  ├─ jobagent.db
+│  ├─ uploads
+│  │  ├─ 701e43c3a9584240900b1283639e5214_CV_Inglés.pdf
+│  │  └─ ec9723e7e72741bf963c068984f84c5e_CV_Inglés.pdf
+│  └─ vacantes.csv
+├─ frontend
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  ├─ favicon.svg
+│  │  └─ icons.svg
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ api
+│  │  │  ├─ cv.js
+│  │  │  ├─ perfil.js
+│  │  │  ├─ postulaciones.js
+│  │  │  └─ vacantes.js
+│  │  ├─ App.css
+│  │  ├─ App.jsx
+│  │  ├─ assets
+│  │  │  ├─ hero.png
+│  │  │  ├─ react.svg
+│  │  │  └─ vite.svg
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  └─ pages
+│  │     ├─ AdminVacantes.jsx
+│  │     ├─ CrearPerfil.jsx
+│  │     ├─ DetalleVacante.jsx
+│  │     ├─ PipelineDashboard.jsx
+│  │     ├─ Recomendaciones.jsx
+│  │     ├─ SubirCV.jsx
+│  │     ├─ Tablero.jsx
+│  │     └─ VerPerfil.jsx
+│  └─ vite.config.js
+├─ pages
+│  └─ Mi perfil.py
+├─ README.md
+├─ src
+│  └─ agents
+└─ storage
+   ├─ analisis_05290bdd72344628b45c44aaa8930452.txt
+   ├─ analisis_5f8b0f110b1a4b31b0339d64f26e25c6.txt
+   ├─ analisis_7e2299cfb92f44bd9414602a8a016fe7.txt
+   └─ analisis_fe037744e00e4845bb2af893c398b8e1.txt
 ```
 
 ---
