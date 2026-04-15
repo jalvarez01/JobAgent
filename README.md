@@ -195,7 +195,7 @@ Open your web browser and visit:
 
 ---
 
-## Option b
+## Option B
 
 ### Step 1: Clone the repository
 
