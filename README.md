@@ -221,6 +221,12 @@ docker compose up --build
 - Backend: http://localhost:8000
 - Swagger: http://localhost:8000/docs
 
+### Step 5: Stop the containers
+
+```bash
+docker compose down
+```
+
 ---
 
 ## How to Use
