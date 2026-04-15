@@ -85,6 +85,8 @@ Before starting, make sure you have the following installed:
 
 ## Installation and Setup
 
+## Option A
+
 ### Step 1: Get the Code
 
 ```bash
@@ -190,6 +192,34 @@ Open your web browser and visit:
 - **Admin panel (vacancy management):** http://localhost:5173/admin
 - **API documentation (Swagger):** http://127.0.0.1:8000/docs
 - **API health check:** http://127.0.0.1:8000/health
+
+---
+
+## Option b
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/jalvarez01/JobAgent.git
+cd JobAgent
+```
+
+### Step 2: Configure environment variables (Create a .env file in the project root)
+
+```bash
+echo "GROQ_API_KEY=your_groq_api_key_here" > .env
+```
+
+### Step 3: Build and run the containers
+
+```bash
+docker compose up --build
+```
+### Step 4: Access the application
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- Swagger: http://localhost:8000/docs
 
 ---
 
