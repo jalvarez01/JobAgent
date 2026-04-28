@@ -9,28 +9,20 @@ import DetalleVacante from "./pages/DetalleVacante"
 import Tablero from "./pages/Tablero"
 import PipelineDashboard from "./pages/PipelineDashboard"
 import AdminVacantes from "./pages/AdminVacantes"
+import Favoritos from "./pages/Favoritos"
 
 function App() {
-  // Si la URL es /admin, mostrar solo el panel admin (separado)
   const isAdmin = window.location.pathname.startsWith("/admin")
-
-  if (isAdmin) {
-    return <AdminApp />
-  }
-
+  if (isAdmin) return <AdminApp />
   return <MainApp />
 }
 
-// ═══════════════════════════════════════════
-// APP PRINCIPAL (candidatos)
-// ═══════════════════════════════════════════
 function MainApp() {
   const [page, setPage] = useState("login")
   const [perfilActual, setPerfilActual] = useState(null)
   const [vacanteSeleccionada, setVacanteSeleccionada] = useState(null)
   const [cargandoSesion, setCargandoSesion] = useState(true)
 
-  // Recuperar sesión al cargar
   useEffect(() => {
     const restaurarSesion = async () => {
       try {
@@ -53,26 +45,10 @@ function MainApp() {
     restaurarSesion()
   }, [])
 
-  const handleLoginExitoso = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
-
-  const handlePerfilCreado = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
-
-  const handlePerfilActualizado = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
-
-  const handleVerDetalle = (vacante) => {
-    setVacanteSeleccionada(vacante)
-    setPage("detalle")
-  }
-
+  const handleLoginExitoso = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handlePerfilCreado = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handlePerfilActualizado = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handleVerDetalle = (vacante) => { setVacanteSeleccionada(vacante); setPage("detalle") }
   const handleLogout = () => {
     localStorage.removeItem("jobagent_session")
     setPerfilActual(null)
@@ -87,7 +63,6 @@ function MainApp() {
     )
   }
 
-  // Sin sesión: mostrar login o registro
   if (!perfilActual) {
     if (page === "registro") {
       return (
@@ -110,10 +85,10 @@ function MainApp() {
     return <Login onLoginExitoso={handleLoginExitoso} onIrARegistro={() => setPage("registro")} />
   }
 
-  // Con sesión: app completa
   const navItems = [
     { key: "ver", label: "Perfil" },
     { key: "recomendaciones", label: "Vacantes" },
+    { key: "favoritos", label: "Favoritos" },
     { key: "tablero", label: "Tablero" },
     { key: "pipeline", label: "Pipeline" },
   ]
@@ -150,7 +125,7 @@ function MainApp() {
           <VerPerfil
             perfil={perfilActual}
             onEditar={() => setPage("editar")}
-            onVolver={() => setPage("ver")}
+            onVolver={() => setPage("crear")}
             onVerRecomendaciones={() => setPage("recomendaciones")}
           />
         )}
@@ -163,6 +138,13 @@ function MainApp() {
         )}
         {page === "recomendaciones" && (
           <Recomendaciones
+            perfil={perfilActual}
+            onVerDetalle={handleVerDetalle}
+            onVolver={() => setPage("ver")}
+          />
+        )}
+        {page === "favoritos" && (
+          <Favoritos
             perfil={perfilActual}
             onVerDetalle={handleVerDetalle}
             onVolver={() => setPage("ver")}
@@ -190,9 +172,6 @@ function MainApp() {
   )
 }
 
-// ═══════════════════════════════════════════
-// APP ADMIN (separada, solo en /admin)
-// ═══════════════════════════════════════════
 function AdminApp() {
   return (
     <div>
@@ -219,19 +198,11 @@ const s = {
     maxWidth: 1200, margin: "0 auto", padding: "20px 32px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
-  logo: {
-    fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer",
-    transition: "opacity 0.2s",
-  },
+  logo: { fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer", transition: "opacity 0.2s" },
   navLinks: { display: "flex", gap: 32 },
-  navLink: {
-    fontSize: 14, cursor: "pointer", paddingBottom: 4,
-    letterSpacing: "0.02em", transition: "color 0.2s",
-  },
+  navLink: { fontSize: 14, cursor: "pointer", paddingBottom: 4, letterSpacing: "0.02em", transition: "color 0.2s" },
   main: { paddingTop: 80 },
-  link: {
-    color: "#fff", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.3)",
-  },
+  link: { color: "#fff", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.3)" },
   adminBadge: {
     fontSize: 13, color: "rgba(251,191,36,0.9)", border: "1px solid rgba(251,191,36,0.3)",
     padding: "4px 12px", letterSpacing: "0.02em",
