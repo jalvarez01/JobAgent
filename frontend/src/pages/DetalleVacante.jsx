@@ -7,12 +7,10 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
   const [postulado, setPostulado] = useState(false)
   const [error, setError] = useState("")
 
-  // Estado del favorito
   const [favorito, setFavorito] = useState(false)
   const [guardandoFav, setGuardandoFav] = useState(false)
   const [mensajeFav, setMensajeFav] = useState("")
 
-  // Verificar si ya es favorito al cargar
   useEffect(() => {
     if (perfilId && vacante?.id) {
       esFavorito(perfilId, String(vacante.id))
@@ -68,17 +66,16 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
 
   return (
     <div style={s.container}>
-      <span onClick={onVolver} style={s.back}>&#8592; Volver a vacantes</span>
+      <span onClick={onVolver} style={s.back}>← Volver a vacantes</span>
 
       <div style={s.card}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16 }}>
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 36, marginBottom: 8, letterSpacing: "-0.02em" }}>{vacante.titulo}</h1>
+            <h1 style={{ fontSize: 36, marginBottom: 8, letterSpacing: "-0.02em", color: "#1a1a1a" }}>{vacante.titulo}</h1>
             <p style={s.muted}>{vacante.empresa}</p>
           </div>
 
-          {/* Botón Favorito */}
           {perfilId && (
             <button
               onClick={handleToggleFavorito}
@@ -92,13 +89,12 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
 
           {vacante.score !== undefined && (
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36 }}>{Math.round(vacante.score * 100)}%</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>match</div>
+              <div style={{ fontSize: 36, color: "#1a1a1a", fontWeight: 500 }}>{Math.round(vacante.score * 100)}%</div>
+              <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)" }}>match</div>
             </div>
           )}
         </div>
 
-        {/* Mensaje de favorito */}
         {mensajeFav && <div style={s.successFav}>{mensajeFav}</div>}
 
         {/* Meta */}
@@ -112,7 +108,7 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
         {/* Descripción */}
         <div style={s.section}>
           <h3 style={s.sectionTitle}>Descripción</h3>
-          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.7)" }}>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(0,0,0,0.75)" }}>
             {vacante.descripcion || "Sin descripción disponible."}
           </p>
         </div>
@@ -139,7 +135,7 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
             <div style={s.tags}>
               {vacante.skills_faltantes.map((sk) => <span key={sk} style={s.skillMiss}>{sk}</span>)}
             </div>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginTop: 8, fontStyle: "italic" }}>
+            <p style={{ fontSize: 13, color: "rgba(0,0,0,0.45)", marginTop: 8, fontStyle: "italic" }}>
               Desarrollar estas habilidades mejoraría tu match.
             </p>
           </div>
@@ -147,7 +143,7 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
 
         {/* Acciones */}
         {error && <div style={s.error}>{error}</div>}
-        <div style={{ display: "flex", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(0,0,0,0.07)" }}>
           {postulado ? (
             <span style={s.btnDone}>Postulación enviada</span>
           ) : (
@@ -168,36 +164,55 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
 
 function MetaItem({ label, value }) {
   return (
-    <div style={{ padding: 14, background: "rgba(255,255,255,0.03)" }}>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 14 }}>{value || "—"}</div>
+    <div style={{ padding: 14, background: "#fafafa" }}>
+      <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, color: "#1a1a1a" }}>{value || "—"}</div>
     </div>
   )
 }
 
 const s = {
   container: { maxWidth: 760, margin: "0 auto", padding: "40px 24px" },
-  back: { color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 14, display: "inline-block", marginBottom: 20 },
-  card: { border: "1px solid rgba(255,255,255,0.1)", padding: 32 },
-  muted: { color: "rgba(255,255,255,0.5)", fontSize: 16 },
-  metaGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.07)" },
+  back: { color: "rgba(0,0,0,0.6)", cursor: "pointer", fontSize: 14, display: "inline-block", marginBottom: 20 },
+  card: { border: "1px solid rgba(0,0,0,0.1)", padding: 32, background: "#fff" },
+  muted: { color: "rgba(0,0,0,0.55)", fontSize: 16 },
+  metaGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid rgba(0,0,0,0.07)" },
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: 12 },
+  sectionTitle: { fontSize: 15, color: "#1a1a1a", marginBottom: 12, fontWeight: 500 },
   tags: { display: "flex", flexWrap: "wrap", gap: 6 },
-  skillOk: { fontSize: 13, color: "rgba(74,222,128,0.9)", padding: "5px 12px", border: "1px solid rgba(74,222,128,0.25)" },
-  skillNormal: { fontSize: 13, color: "rgba(255,255,255,0.7)", padding: "5px 12px", border: "1px solid rgba(255,255,255,0.1)" },
-  skillMiss: { fontSize: 13, color: "rgba(251,191,36,0.8)", padding: "5px 12px", border: "1px solid rgba(251,191,36,0.2)" },
-  error: { color: "#ff6b6b", fontSize: 14, marginBottom: 12 },
-  successFav: { color: "rgba(251,191,36,0.9)", border: "1px solid rgba(251,191,36,0.2)", padding: "8px 14px", marginBottom: 16, fontSize: 13 },
-  btnPrimary: { padding: "14px 28px", background: "#fff", color: "#000", border: "none", fontSize: 15, cursor: "pointer" },
-  btnDone: { padding: "14px 28px", border: "1px solid rgba(74,222,128,0.3)", color: "rgba(74,222,128,0.9)", fontSize: 15 },
-  btnSec: { padding: "14px 28px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 14, display: "inline-flex", alignItems: "center" },
+  skillOk: {
+    fontSize: 13, color: "#059669",
+    padding: "5px 12px", border: "1px solid rgba(5,150,105,0.25)", background: "#d1fae5",
+  },
+  skillNormal: {
+    fontSize: 13, color: "rgba(0,0,0,0.7)",
+    padding: "5px 12px", border: "1px solid rgba(0,0,0,0.1)", background: "#fafafa",
+  },
+  skillMiss: {
+    fontSize: 13, color: "#92400e",
+    padding: "5px 12px", border: "1px solid rgba(146,64,14,0.2)", background: "#fef3c7",
+  },
+  error: { color: "#b91c1c", fontSize: 14, marginBottom: 12 },
+  successFav: {
+    color: "#92400e", border: "1px solid rgba(146,64,14,0.2)", background: "#fef3c7",
+    padding: "8px 14px", marginBottom: 16, fontSize: 13,
+  },
+  btnPrimary: { padding: "14px 28px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 15, cursor: "pointer" },
+  btnDone: {
+    padding: "14px 28px", border: "1px solid rgba(5,150,105,0.3)",
+    color: "#059669", background: "#d1fae5", fontSize: 15,
+  },
+  btnSec: {
+    padding: "14px 28px", background: "#fff", color: "#1a1a1a",
+    border: "1px solid rgba(0,0,0,0.15)", fontSize: 14,
+    display: "inline-flex", alignItems: "center", textDecoration: "none",
+  },
   btnFav: {
-    padding: "10px 18px", background: "transparent", color: "rgba(255,255,255,0.7)",
-    border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer", flexShrink: 0,
+    padding: "10px 18px", background: "#fff", color: "rgba(0,0,0,0.7)",
+    border: "1px solid rgba(0,0,0,0.15)", fontSize: 13, cursor: "pointer", flexShrink: 0,
   },
   btnFavActive: {
-    padding: "10px 18px", background: "transparent", color: "rgba(251,191,36,0.95)",
-    border: "1px solid rgba(251,191,36,0.4)", fontSize: 13, cursor: "pointer", flexShrink: 0, fontWeight: 500,
+    padding: "10px 18px", background: "#fef3c7", color: "#92400e",
+    border: "1px solid rgba(146,64,14,0.3)", fontSize: 13, cursor: "pointer", flexShrink: 0, fontWeight: 500,
   },
 }
