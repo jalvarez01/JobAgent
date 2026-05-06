@@ -9,28 +9,24 @@ import DetalleVacante from "./pages/DetalleVacante"
 import Tablero from "./pages/Tablero"
 import PipelineDashboard from "./pages/PipelineDashboard"
 import AdminVacantes from "./pages/AdminVacantes"
+import AdminEntrevistas from "./pages/AdminEntrevistas"
+import Favoritos from "./pages/Favoritos"
+import Entrevistas from "./pages/Entrevistas"
+import Ayuda from "./pages/Ayuda"
 
 function App() {
-  // Si la URL es /admin, mostrar solo el panel admin (separado)
   const isAdmin = window.location.pathname.startsWith("/admin")
-
-  if (isAdmin) {
-    return <AdminApp />
-  }
-
+  if (isAdmin) return <AdminApp />
   return <MainApp />
 }
 
-// ═══════════════════════════════════════════
-// APP PRINCIPAL (candidatos)
-// ═══════════════════════════════════════════
 function MainApp() {
   const [page, setPage] = useState("login")
   const [perfilActual, setPerfilActual] = useState(null)
   const [vacanteSeleccionada, setVacanteSeleccionada] = useState(null)
   const [cargandoSesion, setCargandoSesion] = useState(true)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
-  // Recuperar sesión al cargar
   useEffect(() => {
     const restaurarSesion = async () => {
       try {
@@ -53,26 +49,30 @@ function MainApp() {
     restaurarSesion()
   }, [])
 
-  const handleLoginExitoso = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (!perfilActual) return
+      if (e.altKey) {
+        const map = { p: "ver", v: "recomendaciones", f: "favoritos", e: "entrevistas", t: "tablero", l: "pipeline", a: "ayuda" }
+        const target = map[e.key.toLowerCase()]
+        if (target) {
+          e.preventDefault()
+          setPage(target)
+        }
+        if (e.key === "?") {
+          e.preventDefault()
+          setShowShortcuts(true)
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKey)
+    return () => window.removeEventListener("keydown", handleKey)
+  }, [perfilActual])
 
-  const handlePerfilCreado = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
-
-  const handlePerfilActualizado = (perfil) => {
-    setPerfilActual(perfil)
-    setPage("ver")
-  }
-
-  const handleVerDetalle = (vacante) => {
-    setVacanteSeleccionada(vacante)
-    setPage("detalle")
-  }
-
+  const handleLoginExitoso = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handlePerfilCreado = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handlePerfilActualizado = (perfil) => { setPerfilActual(perfil); setPage("ver") }
+  const handleVerDetalle = (vacante) => { setVacanteSeleccionada(vacante); setPage("detalle") }
   const handleLogout = () => {
     localStorage.removeItem("jobagent_session")
     setPerfilActual(null)
@@ -81,13 +81,12 @@ function MainApp() {
 
   if (cargandoSesion) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.4)" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(0,0,0,0.4)" }}>
         Cargando...
       </div>
     )
   }
 
-  // Sin sesión: mostrar login o registro
   if (!perfilActual) {
     if (page === "registro") {
       return (
@@ -100,7 +99,7 @@ function MainApp() {
           <div style={s.main}>
             <CrearPerfil onPerfilCreado={handlePerfilCreado} />
             <div style={{ textAlign: "center", marginTop: 16, fontSize: 14 }}>
-              <span style={{ color: "rgba(255,255,255,0.4)" }}>¿Ya tienes cuenta? </span>
+              <span style={{ color: "rgba(0,0,0,0.5)" }}>¿Ya tienes cuenta? </span>
               <span onClick={() => setPage("login")} style={s.link}>Iniciar sesión</span>
             </div>
           </div>
@@ -110,12 +109,14 @@ function MainApp() {
     return <Login onLoginExitoso={handleLoginExitoso} onIrARegistro={() => setPage("registro")} />
   }
 
-  // Con sesión: app completa
   const navItems = [
-    { key: "ver", label: "Perfil" },
-    { key: "recomendaciones", label: "Vacantes" },
-    { key: "tablero", label: "Tablero" },
-    { key: "pipeline", label: "Pipeline" },
+    { key: "ver", label: "Perfil", shortcut: "P" },
+    { key: "recomendaciones", label: "Vacantes", shortcut: "V" },
+    { key: "favoritos", label: "Favoritos", shortcut: "F" },
+    { key: "entrevistas", label: "Entrevistas", shortcut: "E" },
+    { key: "tablero", label: "Tablero", shortcut: "T" },
+    { key: "pipeline", label: "Pipeline", shortcut: "L" },
+    { key: "ayuda", label: "Ayuda", shortcut: "A" },
   ]
 
   return (
@@ -123,87 +124,110 @@ function MainApp() {
       <nav style={s.nav}>
         <div style={s.navInner}>
           <span style={s.logo} onClick={() => setPage("ver")}>JobAgent</span>
-
           <div style={s.navLinks}>
             {navItems.map((item) => (
-              <span
-                key={item.key}
-                onClick={() => setPage(item.key)}
+              <span key={item.key} onClick={() => setPage(item.key)}
                 style={{
                   ...s.navLink,
-                  color: page === item.key ? "#fff" : "rgba(255,255,255,0.5)",
-                  borderBottom: page === item.key ? "1px solid #fff" : "1px solid transparent",
+                  color: page === item.key ? "#1a1a1a" : "rgba(0,0,0,0.5)",
+                  borderBottom: page === item.key ? "1px solid #1a1a1a" : "1px solid transparent",
+                  fontWeight: page === item.key ? 500 : 400,
                 }}
               >
                 {item.label}
               </span>
             ))}
-            <span onClick={handleLogout} style={{ ...s.navLink, color: "rgba(255,255,255,0.3)" }}>
-              Salir
-            </span>
+            <span onClick={handleLogout} style={{ ...s.navLink, color: "rgba(0,0,0,0.4)" }}>Salir</span>
           </div>
         </div>
       </nav>
 
       <main style={s.main}>
-        {page === "ver" && (
-          <VerPerfil
-            perfil={perfilActual}
-            onEditar={() => setPage("editar")}
-            onVolver={() => setPage("ver")}
-            onVerRecomendaciones={() => setPage("recomendaciones")}
-          />
-        )}
-        {page === "editar" && perfilActual && (
-          <EditarPerfil
-            perfil={perfilActual}
-            onPerfilActualizado={handlePerfilActualizado}
-            onCancelar={() => setPage("ver")}
-          />
-        )}
-        {page === "recomendaciones" && (
-          <Recomendaciones
-            perfil={perfilActual}
-            onVerDetalle={handleVerDetalle}
-            onVolver={() => setPage("ver")}
-          />
-        )}
-        {page === "detalle" && (
-          <DetalleVacante
-            vacante={vacanteSeleccionada}
-            perfilId={perfilActual?.id}
-            onVolver={() => setPage("recomendaciones")}
-          />
-        )}
-        {page === "tablero" && (
-          <Tablero perfil={perfilActual} onVolver={() => setPage("ver")} />
-        )}
-        {page === "pipeline" && (
-          <PipelineDashboard
-            perfil={perfilActual}
-            onVerTablero={() => setPage("tablero")}
-            onVolver={() => setPage("ver")}
-          />
-        )}
+        {page === "ver" && <VerPerfil perfil={perfilActual} onEditar={() => setPage("editar")} onVolver={() => setPage("crear")} onVerRecomendaciones={() => setPage("recomendaciones")} />}
+        {page === "editar" && perfilActual && <EditarPerfil perfil={perfilActual} onPerfilActualizado={handlePerfilActualizado} onCancelar={() => setPage("ver")} />}
+        {page === "recomendaciones" && <Recomendaciones perfil={perfilActual} onVerDetalle={handleVerDetalle} onVolver={() => setPage("ver")} />}
+        {page === "favoritos" && <Favoritos perfil={perfilActual} onVerDetalle={handleVerDetalle} onVolver={() => setPage("ver")} />}
+        {page === "entrevistas" && <Entrevistas perfil={perfilActual} onVolver={() => setPage("ver")} />}
+        {page === "detalle" && <DetalleVacante vacante={vacanteSeleccionada} perfilId={perfilActual?.id} onVolver={() => setPage("recomendaciones")} />}
+        {page === "tablero" && <Tablero perfil={perfilActual} onVolver={() => setPage("ver")} />}
+        {page === "pipeline" && <PipelineDashboard perfil={perfilActual} onVerTablero={() => setPage("tablero")} onVolver={() => setPage("ver")} />}
+        {page === "ayuda" && <Ayuda onVolver={() => setPage("ver")} />}
       </main>
+
+      {showShortcuts && (
+        <div style={s.modalOverlay} onClick={() => setShowShortcuts(false)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 22, marginBottom: 8 }}>Atajos de teclado</h2>
+            <p style={{ fontSize: 14, color: "rgba(0,0,0,0.5)", marginBottom: 20 }}>Navega más rápido con estos atajos</p>
+            {[
+              ["Perfil", "Alt + P"], ["Vacantes", "Alt + V"], ["Favoritos", "Alt + F"],
+              ["Entrevistas", "Alt + E"], ["Tablero", "Alt + T"], ["Pipeline", "Alt + L"],
+              ["Ayuda", "Alt + A"], ["Ver atajos", "Alt + ?"],
+            ].map(([label, key]) => (
+              <div key={key} style={s.shortcutRow}>
+                <span>{label}</span>
+                <kbd>{key}</kbd>
+              </div>
+            ))}
+            <button onClick={() => setShowShortcuts(false)} style={{ ...s.btnPrimary, marginTop: 16, width: "100%" }}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-// ═══════════════════════════════════════════
-// APP ADMIN (separada, solo en /admin)
-// ═══════════════════════════════════════════
 function AdminApp() {
+  // Sub-routing dentro de admin
+  const path = window.location.pathname
+  const [adminPage, setAdminPage] = useState(
+    path.includes("/entrevistas") ? "entrevistas" : "vacantes"
+  )
+
+  const handleNav = (page) => {
+    setAdminPage(page)
+    const newPath = page === "entrevistas" ? "/admin/entrevistas" : "/admin"
+    window.history.pushState({}, "", newPath)
+  }
+
   return (
     <div>
       <nav style={s.nav}>
         <div style={s.navInner}>
-          <span style={s.logo}>JobAgent</span>
-          <span style={s.adminBadge}>Admin Panel</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <span style={s.logo}>JobAgent</span>
+            <span style={s.adminBadge}>Panel Administrativo</span>
+          </div>
+          <div style={s.navLinks}>
+            <span onClick={() => handleNav("vacantes")}
+              style={{
+                ...s.navLink,
+                color: adminPage === "vacantes" ? "#1a1a1a" : "rgba(0,0,0,0.5)",
+                borderBottom: adminPage === "vacantes" ? "1px solid #1a1a1a" : "1px solid transparent",
+                fontWeight: adminPage === "vacantes" ? 500 : 400,
+              }}
+            >
+              Vacantes
+            </span>
+            <span onClick={() => handleNav("entrevistas")}
+              style={{
+                ...s.navLink,
+                color: adminPage === "entrevistas" ? "#1a1a1a" : "rgba(0,0,0,0.5)",
+                borderBottom: adminPage === "entrevistas" ? "1px solid #1a1a1a" : "1px solid transparent",
+                fontWeight: adminPage === "entrevistas" ? 500 : 400,
+              }}
+            >
+              Entrevistas
+            </span>
+            <span onClick={() => { window.location.href = "/" }} style={{ ...s.navLink, color: "rgba(0,0,0,0.4)" }}>
+              Salir
+            </span>
+          </div>
         </div>
       </nav>
       <main style={s.main}>
-        <AdminVacantes onVolver={() => { window.location.href = "/" }} />
+        {adminPage === "vacantes" && <AdminVacantes onVolver={() => { window.location.href = "/" }} />}
+        {adminPage === "entrevistas" && <AdminEntrevistas onVolver={() => { window.location.href = "/" }} />}
       </main>
     </div>
   )
@@ -212,30 +236,29 @@ function AdminApp() {
 const s = {
   nav: {
     position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
-    background: "rgba(0,0,0,0.85)", backdropFilter: "blur(20px)",
+    borderBottom: "1px solid rgba(0,0,0,0.08)",
+    background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
   },
   navInner: {
     maxWidth: 1200, margin: "0 auto", padding: "20px 32px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
-  logo: {
-    fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer",
-    transition: "opacity 0.2s",
-  },
-  navLinks: { display: "flex", gap: 32 },
-  navLink: {
-    fontSize: 14, cursor: "pointer", paddingBottom: 4,
-    letterSpacing: "0.02em", transition: "color 0.2s",
-  },
+  logo: { fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer", color: "#1a1a1a" },
+  navLinks: { display: "flex", gap: 28 },
+  navLink: { fontSize: 14, cursor: "pointer", paddingBottom: 4, transition: "color 0.2s" },
   main: { paddingTop: 80 },
-  link: {
-    color: "#fff", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.3)",
-  },
+  link: { color: "#1a1a1a", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.3)" },
   adminBadge: {
-    fontSize: 13, color: "rgba(251,191,36,0.9)", border: "1px solid rgba(251,191,36,0.3)",
-    padding: "4px 12px", letterSpacing: "0.02em",
+    fontSize: 13, color: "#92400e", border: "1px solid rgba(146,64,14,0.3)",
+    background: "#fef3c7", padding: "4px 12px", borderRadius: 4,
   },
+  modalOverlay: {
+    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
+  },
+  modal: { background: "#fff", padding: 32, maxWidth: 420, width: "90%", border: "1px solid rgba(0,0,0,0.1)" },
+  shortcutRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 14 },
+  btnPrimary: { padding: "12px 24px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 14, cursor: "pointer" },
 }
 
 export default App

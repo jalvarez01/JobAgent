@@ -15,11 +15,9 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  // HU06: búsqueda
   const [busqueda, setBusqueda] = useState("")
-  const [modo, setModo] = useState("recomendadas") // "recomendadas" | "busqueda"
+  const [modo, setModo] = useState("recomendadas")
 
-  // HU07: filtros
   const [filtroModalidad, setFiltroModalidad] = useState("")
   const [filtroUbicacion, setFiltroUbicacion] = useState("")
   const [filtroSalario, setFiltroSalario] = useState("")
@@ -46,7 +44,6 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
     finally { setLoading(false) }
   }
 
-  // HU06: ejecutar búsqueda
   const handleBuscar = (e) => {
     e.preventDefault()
     if (busqueda.trim()) {
@@ -60,7 +57,6 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
     setModo("recomendadas")
   }
 
-  // HU07: filtro de salario client-side
   const filtrarPorSalario = (lista) => {
     if (!filtroSalario) return lista
     const [min, max] = filtroSalario.split("-").map(Number)
@@ -72,13 +68,11 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
     })
   }
 
-  // HU07: filtro de ubicación client-side (para modo búsqueda)
   const filtrarPorUbicacion = (lista) => {
     if (!filtroUbicacion || modo === "recomendadas") return lista
     return lista.filter((v) => v.ubicacion && v.ubicacion.toLowerCase().includes(filtroUbicacion.toLowerCase()))
   }
 
-  // HU07: filtro de modalidad client-side (para modo búsqueda)
   const filtrarPorModalidad = (lista) => {
     if (!filtroModalidad || modo === "recomendadas") return lista
     return lista.filter((v) => v.modalidad && v.modalidad.toLowerCase() === filtroModalidad.toLowerCase())
@@ -93,6 +87,12 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
     return min ? `Desde ${f(min)}` : `Hasta ${f(max)}`
   }
 
+  const colorScore = (score) => {
+    if (score >= 0.7) return "#059669"
+    if (score >= 0.4) return "#d97706"
+    return "rgba(0,0,0,0.4)"
+  }
+
   return (
     <div style={s.container}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
@@ -104,10 +104,10 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
               : `Resultados para "${busqueda}"`}
           </p>
         </div>
-        <button onClick={onVolver} style={s.btnSec}>&#8592; Mi perfil</button>
+        <button onClick={onVolver} style={s.btnSec}>← Mi perfil</button>
       </div>
 
-      {/* HU06: Barra de búsqueda */}
+      {/* Barra de búsqueda */}
       <form onSubmit={handleBuscar} style={s.searchRow}>
         <input
           type="text"
@@ -124,7 +124,7 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
         )}
       </form>
 
-      {/* HU07: Filtros */}
+      {/* Filtros */}
       <div style={s.filtros}>
         <select value={filtroModalidad} onChange={(e) => setFiltroModalidad(e.target.value)} style={{ width: 160 }}>
           <option value="">Modalidad</option>
@@ -145,7 +145,7 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
         {(filtroModalidad || filtroUbicacion || filtroSalario) && (
           <span
             onClick={() => { setFiltroModalidad(""); setFiltroUbicacion(""); setFiltroSalario("") }}
-            style={{ ...s.muted, cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.3)" }}
+            style={{ ...s.muted, cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.3)" }}
           >
             Limpiar filtros
           </span>
@@ -162,7 +162,7 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
         <p style={{ textAlign: "center", padding: 60, ...s.muted }}>Cargando...</p>
       ) : vacantesFinales.length === 0 ? (
         <div style={{ textAlign: "center", padding: 60 }}>
-          <p style={{ marginBottom: 8 }}>No se encontraron vacantes</p>
+          <p style={{ marginBottom: 8, color: "#1a1a1a" }}>No se encontraron vacantes</p>
           <p style={s.muted}>
             {modo === "busqueda"
               ? "Intenta con otros términos de búsqueda."
@@ -170,26 +170,23 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={s.list}>
           {vacantesFinales.map((v) => (
             <div
               key={v.id}
               onClick={() => onVerDetalle(v)}
               style={s.row}
-              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
             >
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                  <h3 style={{ fontSize: 16, margin: 0 }}>{v.titulo}</h3>
-                  <span style={s.muted}>{v.empresa}</span>
+                  <h3 style={{ fontSize: 16, margin: 0, color: "#1a1a1a", fontWeight: 500 }}>{v.titulo}</h3>
+                  <span style={s.muted}>· {v.empresa}</span>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {v.ubicacion && <span style={s.meta}>{v.ubicacion}</span>}
                   {v.modalidad && <span style={s.meta}>{v.modalidad}</span>}
                   {fmt(v.salario_min, v.salario_max) && <span style={s.meta}>{fmt(v.salario_min, v.salario_max)}</span>}
                 </div>
-                {/* Skills match (solo en modo recomendadas) */}
                 {v.skills_match && (
                   <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
                     {v.skills_match?.map((sk) => <span key={sk} style={s.skillOk}>{sk}</span>)}
@@ -198,11 +195,10 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
                 )}
               </div>
 
-              {/* Score (solo en modo recomendadas) */}
               {v.score !== undefined && (
                 <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 20 }}>
-                  <div style={{ fontSize: 28, fontWeight: 400 }}>{Math.round(v.score * 100)}%</div>
-                  <div style={{ fontSize: 11, color: v.score >= 0.7 ? "rgba(74,222,128,0.8)" : v.score >= 0.4 ? "rgba(251,191,36,0.8)" : "rgba(255,255,255,0.3)" }}>
+                  <div style={{ fontSize: 28, fontWeight: 500, color: "#1a1a1a" }}>{Math.round(v.score * 100)}%</div>
+                  <div style={{ fontSize: 11, color: colorScore(v.score), fontWeight: 500 }}>
                     {v.score >= 0.7 ? "Alto" : v.score >= 0.4 ? "Medio" : "Bajo"}
                   </div>
                 </div>
@@ -217,20 +213,33 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
 
 const s = {
   container: { maxWidth: 860, margin: "0 auto", padding: "40px 24px" },
-  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
-  subtitle: { fontSize: 16, color: "rgba(255,255,255,0.4)" },
-  muted: { color: "rgba(255,255,255,0.4)", fontSize: 14 },
-  error: { color: "#ff6b6b", border: "1px solid rgba(255,100,100,0.2)", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em", color: "#1a1a1a" },
+  subtitle: { fontSize: 16, color: "rgba(0,0,0,0.55)" },
+  muted: { color: "rgba(0,0,0,0.55)", fontSize: 14 },
+  error: { color: "#b91c1c", border: "1px solid rgba(185,28,28,0.2)", background: "#fef2f2", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
   searchRow: { display: "flex", gap: 10, marginBottom: 16 },
   filtros: { display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" },
+  list: {
+    display: "flex", flexDirection: "column", gap: 8,
+    border: "1px solid rgba(0,0,0,0.1)", background: "#fff",
+  },
   row: {
     display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-    cursor: "pointer", transition: "background 0.15s",
+    padding: "20px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)",
+    cursor: "pointer", transition: "background 0.15s", background: "#fff",
   },
-  meta: { fontSize: 12, color: "rgba(255,255,255,0.4)", padding: "2px 8px", border: "1px solid rgba(255,255,255,0.1)" },
-  skillOk: { fontSize: 11, color: "rgba(74,222,128,0.9)", padding: "2px 8px", border: "1px solid rgba(74,222,128,0.2)" },
-  skillMiss: { fontSize: 11, color: "rgba(251,191,36,0.7)", padding: "2px 8px", border: "1px solid rgba(251,191,36,0.15)" },
-  btnPrimary: { padding: "10px 20px", background: "#fff", color: "#000", border: "none", fontSize: 14, cursor: "pointer" },
-  btnSec: { padding: "10px 20px", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer" },
+  meta: {
+    fontSize: 12, color: "rgba(0,0,0,0.6)",
+    padding: "2px 8px", border: "1px solid rgba(0,0,0,0.1)", background: "#fafafa",
+  },
+  skillOk: {
+    fontSize: 11, color: "#059669",
+    padding: "2px 8px", border: "1px solid rgba(5,150,105,0.25)", background: "#d1fae5",
+  },
+  skillMiss: {
+    fontSize: 11, color: "#92400e",
+    padding: "2px 8px", border: "1px solid rgba(146,64,14,0.2)", background: "#fef3c7",
+  },
+  btnPrimary: { padding: "10px 20px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 14, cursor: "pointer" },
+  btnSec: { padding: "10px 20px", background: "#fff", color: "#1a1a1a", border: "1px solid rgba(0,0,0,0.15)", fontSize: 13, cursor: "pointer" },
 }
