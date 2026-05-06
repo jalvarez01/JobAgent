@@ -22,14 +22,20 @@ class EntrevistaModel(Base):
 
     # Detalles de la entrevista
     fecha_entrevista: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    tipo: Mapped[str] = mapped_column(String(30), default="tecnica")  # tecnica / hr / final / cultural
+    tipo: Mapped[str] = mapped_column(String(30), default="tecnica")
     entrevistador: Mapped[str | None] = mapped_column(String(200), nullable=True)
     duracion_minutos: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    # Resultados (solo el admin los modifica)
-    puntaje: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 0-100
-    nivel: Mapped[str | None] = mapped_column(String(30), nullable=True)  # excelente / bueno / regular / debil
-    estado: Mapped[str] = mapped_column(String(30), default="programada")  # programada / completada / cancelada
+    # Puntaje total y nivel (calculados automáticamente)
+    puntaje: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    nivel: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    estado: Mapped[str] = mapped_column(String(30), default="programada")
+
+    # Sub-puntajes desglosados (0-100 cada uno)
+    puntaje_tecnico: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    puntaje_comunicacion: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    puntaje_conocimientos: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    puntaje_actitud: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Feedback y análisis
     fortalezas: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -37,6 +43,5 @@ class EntrevistaModel(Base):
     recomendaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     notas_admin: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)

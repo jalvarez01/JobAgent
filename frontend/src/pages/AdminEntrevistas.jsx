@@ -21,8 +21,10 @@ const ESTADOS = [
 const FORM_VACIO = {
   perfil_id: "", vacante_id: "", fecha_entrevista: "",
   tipo: "tecnica", entrevistador: "", duracion_minutos: "",
-  estado: "programada", puntaje: "", fortalezas: "",
-  debilidades: "", recomendaciones: "", notas_admin: "",
+  estado: "programada",
+  puntaje_tecnico: "", puntaje_comunicacion: "",
+  puntaje_conocimientos: "", puntaje_actitud: "",
+  fortalezas: "", debilidades: "", recomendaciones: "", notas_admin: "",
 }
 
 export default function AdminEntrevistas({ onVolver }) {
@@ -65,7 +67,11 @@ export default function AdminEntrevistas({ onVolver }) {
       fecha_entrevista: ent.fecha_entrevista ? ent.fecha_entrevista.slice(0, 16) : "",
       tipo: ent.tipo, entrevistador: ent.entrevistador || "",
       duracion_minutos: ent.duracion_minutos ?? "",
-      estado: ent.estado, puntaje: ent.puntaje ?? "",
+      estado: ent.estado,
+      puntaje_tecnico: ent.puntaje_tecnico ?? "",
+      puntaje_comunicacion: ent.puntaje_comunicacion ?? "",
+      puntaje_conocimientos: ent.puntaje_conocimientos ?? "",
+      puntaje_actitud: ent.puntaje_actitud ?? "",
       fortalezas: ent.fortalezas || "", debilidades: ent.debilidades || "",
       recomendaciones: ent.recomendaciones || "", notas_admin: ent.notas_admin || "",
     })
@@ -95,7 +101,10 @@ export default function AdminEntrevistas({ onVolver }) {
       ...form,
       vacante_id: form.vacante_id || null,
       duracion_minutos: form.duracion_minutos !== "" ? Number(form.duracion_minutos) : null,
-      puntaje: form.puntaje !== "" ? Number(form.puntaje) : null,
+      puntaje_tecnico: form.puntaje_tecnico !== "" ? Number(form.puntaje_tecnico) : null,
+      puntaje_comunicacion: form.puntaje_comunicacion !== "" ? Number(form.puntaje_comunicacion) : null,
+      puntaje_conocimientos: form.puntaje_conocimientos !== "" ? Number(form.puntaje_conocimientos) : null,
+      puntaje_actitud: form.puntaje_actitud !== "" ? Number(form.puntaje_actitud) : null,
       fecha_entrevista: form.fecha_entrevista || null,
     }
 
@@ -139,6 +148,17 @@ export default function AdminEntrevistas({ onVolver }) {
     return { color: "#b91c1c", bg: "#fee2e2" }
   }
 
+  // Calcular puntaje promedio en tiempo real
+  const subPuntajes = [form.puntaje_tecnico, form.puntaje_comunicacion, form.puntaje_conocimientos, form.puntaje_actitud]
+    .map(p => p !== "" ? Number(p) : null).filter(p => p !== null)
+  const puntajePromedio = subPuntajes.length > 0
+    ? Math.round(subPuntajes.reduce((s, p) => s + p, 0) / subPuntajes.length)
+    : null
+  const nivelCalc = puntajePromedio == null ? null
+    : puntajePromedio >= 85 ? "Excelente"
+    : puntajePromedio >= 70 ? "Bueno"
+    : puntajePromedio >= 50 ? "Regular" : "Débil"
+
   return (
     <div style={s.container}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
@@ -179,7 +199,7 @@ export default function AdminEntrevistas({ onVolver }) {
               <button onClick={handleNueva} style={{ ...s.btnPrimary, marginTop: 16 }}>Crear la primera</button>
             </div>
           ) : (
-            <div style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
+            <div style={{ border: "1px solid rgba(0,0,0,0.1)", background: "#fff" }}>
               {filtradas.map((ent, i) => {
                 const est = colorEstado(ent.estado)
                 return (
@@ -264,24 +284,58 @@ export default function AdminEntrevistas({ onVolver }) {
             </div>
           </Section>
 
-          <Section title="Resultados">
-            <div style={s.grid2}>
-              <div style={s.fieldWrap}>
-                <label style={s.label}>Estado</label>
-                <select name="estado" value={form.estado} onChange={handleChange}>
-                  {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
-                </select>
-              </div>
-              <Field label="Puntaje (0-100)" name="puntaje" type="number" value={form.puntaje} onChange={handleChange} placeholder="Ej: 85" />
+          <Section title="Estado">
+            <div style={s.fieldWrap}>
+              <label style={s.label}>Estado actual</label>
+              <select name="estado" value={form.estado} onChange={handleChange}>
+                {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+              </select>
             </div>
-            {form.puntaje !== "" && (
-              <div style={{ marginTop: 8, fontSize: 13, color: colorPuntaje(Number(form.puntaje)) }}>
-                Nivel calculado:{" "}
-                <strong>
-                  {Number(form.puntaje) >= 85 ? "Excelente"
-                    : Number(form.puntaje) >= 70 ? "Bueno"
-                    : Number(form.puntaje) >= 50 ? "Regular" : "Débil"}
-                </strong>
+          </Section>
+
+          <Section title="Evaluación por categorías">
+            <p style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", marginBottom: 16 }}>
+              Asigna un puntaje de 0 a 100 a cada categoría. El puntaje total se calcula automáticamente como promedio.
+            </p>
+
+            <ScoreSlider
+              label="Habilidades técnicas"
+              name="puntaje_tecnico"
+              value={form.puntaje_tecnico}
+              onChange={handleChange}
+            />
+            <ScoreSlider
+              label="Comunicación"
+              name="puntaje_comunicacion"
+              value={form.puntaje_comunicacion}
+              onChange={handleChange}
+            />
+            <ScoreSlider
+              label="Conocimientos del área"
+              name="puntaje_conocimientos"
+              value={form.puntaje_conocimientos}
+              onChange={handleChange}
+            />
+            <ScoreSlider
+              label="Actitud y motivación"
+              name="puntaje_actitud"
+              value={form.puntaje_actitud}
+              onChange={handleChange}
+            />
+
+            {puntajePromedio != null && (
+              <div style={{ marginTop: 20, padding: 16, background: "#fafafa", border: "1px solid rgba(0,0,0,0.08)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 14, color: "rgba(0,0,0,0.6)" }}>Puntaje total calculado</span>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 28, fontWeight: 600, color: colorPuntaje(puntajePromedio) }}>
+                      {puntajePromedio}/100
+                    </div>
+                    <div style={{ fontSize: 12, color: colorPuntaje(puntajePromedio), fontWeight: 500 }}>
+                      Nivel: {nivelCalc}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </Section>
@@ -325,6 +379,37 @@ export default function AdminEntrevistas({ onVolver }) {
   )
 }
 
+function ScoreSlider({ label, name, value, onChange }) {
+  const numValue = value !== "" ? Number(value) : 0
+  const colorBar = numValue >= 85 ? "#059669"
+    : numValue >= 70 ? "#0891b2"
+    : numValue >= 50 ? "#d97706" : "#b91c1c"
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <label style={{ fontSize: 13, color: "rgba(0,0,0,0.7)" }}>{label}</label>
+        <span style={{ fontSize: 13, fontWeight: 500, color: value !== "" ? colorBar : "rgba(0,0,0,0.3)" }}>
+          {value !== "" ? `${value}/100` : "Sin puntaje"}
+        </span>
+      </div>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <input
+          type="range" min="0" max="100"
+          name={name} value={value !== "" ? value : 0}
+          onChange={onChange}
+          style={{ flex: 1, accentColor: colorBar }}
+        />
+        <input
+          type="number" min="0" max="100"
+          name={name} value={value} onChange={onChange}
+          placeholder="—" style={{ width: 70, textAlign: "center" }}
+        />
+      </div>
+    </div>
+  )
+}
+
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 24 }}>
@@ -345,11 +430,11 @@ function Field({ label, name, value, onChange, type = "text", placeholder }) {
 
 const s = {
   container: { maxWidth: 1100, margin: "0 auto", padding: "40px 24px" },
-  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em" },
+  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em", color: "#1a1a1a" },
   subtitle: { fontSize: 14, color: "rgba(0,0,0,0.55)" },
   error: { color: "#b91c1c", border: "1px solid rgba(185,28,28,0.2)", background: "#fef2f2", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
   success: { color: "#059669", border: "1px solid rgba(5,150,105,0.2)", background: "#d1fae5", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
-  row: { display: "flex", alignItems: "center", padding: "14px 16px", gap: 12, transition: "background 0.15s" },
+  row: { display: "flex", alignItems: "center", padding: "14px 16px", gap: 12 },
   meta: { fontSize: 11, padding: "2px 8px", border: "1px solid rgba(0,0,0,0.1)", color: "rgba(0,0,0,0.6)" },
   estadoChip: { fontSize: 11, padding: "2px 8px", fontWeight: 500 },
   btnPrimary: { padding: "12px 24px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 14, cursor: "pointer" },

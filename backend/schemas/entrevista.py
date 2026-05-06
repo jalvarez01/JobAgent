@@ -25,6 +25,13 @@ class EntrevistaUpdate(BaseModel):
     puntaje: Optional[int] = Field(None, ge=0, le=100)
     nivel: Optional[str] = None
     estado: Optional[str] = None
+
+    # Sub-puntajes
+    puntaje_tecnico: Optional[int] = Field(None, ge=0, le=100)
+    puntaje_comunicacion: Optional[int] = Field(None, ge=0, le=100)
+    puntaje_conocimientos: Optional[int] = Field(None, ge=0, le=100)
+    puntaje_actitud: Optional[int] = Field(None, ge=0, le=100)
+
     fortalezas: Optional[str] = None
     debilidades: Optional[str] = None
     recomendaciones: Optional[str] = None
@@ -46,12 +53,17 @@ class EntrevistaResponse(BaseModel):
     nivel: Optional[str] = None
     estado: str
 
+    # Sub-puntajes
+    puntaje_tecnico: Optional[int] = None
+    puntaje_comunicacion: Optional[int] = None
+    puntaje_conocimientos: Optional[int] = None
+    puntaje_actitud: Optional[int] = None
+
     fortalezas: Optional[str] = None
     debilidades: Optional[str] = None
     recomendaciones: Optional[str] = None
     notas_admin: Optional[str] = None
 
-    # Datos enriquecidos
     perfil_nombre: Optional[str] = None
     perfil_email: Optional[str] = None
     vacante_titulo: Optional[str] = None
