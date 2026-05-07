@@ -13,6 +13,7 @@ import AdminEntrevistas from "./pages/AdminEntrevistas"
 import Favoritos from "./pages/Favoritos"
 import Entrevistas from "./pages/Entrevistas"
 import Ayuda from "./pages/Ayuda"
+import NotificacionesBell from "./pages/NotificacionesBell"
 
 function App() {
   const isAdmin = window.location.pathname.startsWith("/admin")
@@ -137,6 +138,7 @@ function MainApp() {
                 {item.label}
               </span>
             ))}
+            <NotificacionesBell perfilId={perfilActual.id} />
             <span onClick={handleLogout} style={{ ...s.navLink, color: "rgba(0,0,0,0.4)" }}>Salir</span>
           </div>
         </div>
@@ -178,7 +180,6 @@ function MainApp() {
 }
 
 function AdminApp() {
-  // Sub-routing dentro de admin
   const path = window.location.pathname
   const [adminPage, setAdminPage] = useState(
     path.includes("/entrevistas") ? "entrevistas" : "vacantes"
@@ -244,7 +245,7 @@ const s = {
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
   logo: { fontSize: 22, letterSpacing: "-0.02em", cursor: "pointer", color: "#1a1a1a" },
-  navLinks: { display: "flex", gap: 28 },
+  navLinks: { display: "flex", gap: 24, alignItems: "center" },
   navLink: { fontSize: 14, cursor: "pointer", paddingBottom: 4, transition: "color 0.2s" },
   main: { paddingTop: 80 },
   link: { color: "#1a1a1a", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.3)" },
