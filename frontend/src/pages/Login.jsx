@@ -17,10 +17,18 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
     setLoading(true)
     try {
       const res = await login(email, password)
-      const perfil = await obtenerPerfil(res.perfil_id)
+
+      // Guardar sesión CON token JWT
       localStorage.setItem("jobagent_session", JSON.stringify({
-        perfil_id: res.perfil_id, email: res.email, nombre: res.nombre_completo,
+        perfil_id: res.perfil_id,
+        email: res.email,
+        nombre: res.nombre_completo,
+        access_token: res.access_token,
       }))
+
+      // Ahora que el token está guardado, podemos obtener el perfil
+      const perfil = await obtenerPerfil(res.perfil_id)
+
       if (onLoginExitoso) onLoginExitoso(perfil)
     } catch (err) {
       setError(err.message)
@@ -40,24 +48,12 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
         <form onSubmit={handleSubmit}>
           <div style={s.fieldWrap}>
             <label htmlFor="email" style={s.label}>Email</label>
-            <input
-              id="email" type="email" value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              autoComplete="email"
-              required
-            />
+            <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" autoComplete="email" required />
           </div>
 
           <div style={s.fieldWrap}>
             <label htmlFor="password" style={s.label}>Contraseña</label>
-            <input
-              id="password" type="password" value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Tu contraseña"
-              autoComplete="current-password"
-              required
-            />
+            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Tu contraseña" autoComplete="current-password" required />
           </div>
 
           <button type="submit" disabled={loading} style={s.btnPrimary}>
