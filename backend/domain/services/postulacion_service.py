@@ -18,24 +18,27 @@ class PostulacionService:
         self.notif_service = NotificacionService(db)
 
     def crear_postulacion(self, data: PostulacionCreate) -> PostulacionResponse:
-        # Validar duplicados activos
-        existente = self.repo.get_activa_perfil_vacante(data.perfil_id, data.vacante_id)
-        if existente:
-            raise ValueError("Ya existe una postulación activa para esta vacante")
+        postulacion = self.repo.create(
+            perfil_id=data.perfil_id,
+            vacante_id=data.vacante_id,
+            tipo=data.tipo or "manual",
+            notas=data.notas,
+            score_match=data.score_match,
+        )
 
-        postulacion = self.repo.create(data)
-
-        # Crear notificación de postulación creada
         vacante = self.vacante_repo.get_by_id(data.vacante_id)
         if vacante:
-            self.notif_service.notificar_cambio_estado(
-                perfil_id=data.perfil_id,
-                postulacion_id=postulacion.id,
-                vacante_titulo=vacante.titulo,
-                empresa=vacante.empresa,
-                estado_anterior="—",
-                estado_nuevo="postulado",
-            )
+            try:
+                self.notif_service.notificar_cambio_estado(
+                    perfil_id=data.perfil_id,
+                    postulacion_id=postulacion.id,
+                    vacante_titulo=vacante.titulo,
+                    empresa=vacante.empresa,
+                    estado_anterior="—",
+                    estado_nuevo="postulado",
+                )
+            except Exception as e:
+                print(f"[warning] No se pudo crear notificación: {e}")
 
         return self._enriquecer(postulacion)
 
@@ -43,8 +46,12 @@ class PostulacionService:
         postulaciones = self.repo.get_by_perfil(perfil_id)
         return [self._enriquecer(p) for p in postulaciones]
 
+    def listar_todas(self) -> list[PostulacionResponse]:
+        """Solo para uso del admin: lista todas las postulaciones del sistema."""
+        postulaciones = self.repo.get_all()
+        return [self._enriquecer_con_perfil(p) for p in postulaciones]
+
     def cambiar_estado(self, postulacion_id: str, nuevo_estado: str, notas: str | None = None) -> Optional[PostulacionResponse]:
-        # Obtener estado anterior antes de cambiar
         postulacion_antes = self.repo.get_by_id(postulacion_id)
         if not postulacion_antes:
             return None
@@ -52,23 +59,24 @@ class PostulacionService:
         perfil_id = postulacion_antes.perfil_id
         vacante_id = postulacion_antes.vacante_id
 
-        # Cambiar estado
-        postulacion = self.repo.cambiar_estado(postulacion_id, nuevo_estado, notas)
+        postulacion = self.repo.update_estado(postulacion_id, nuevo_estado, notas)
         if not postulacion:
             return None
 
-        # Si efectivamente cambió, crear notificación
         if estado_anterior != nuevo_estado:
             vacante = self.vacante_repo.get_by_id(vacante_id)
             if vacante:
-                self.notif_service.notificar_cambio_estado(
-                    perfil_id=perfil_id,
-                    postulacion_id=postulacion_id,
-                    vacante_titulo=vacante.titulo,
-                    empresa=vacante.empresa,
-                    estado_anterior=estado_anterior,
-                    estado_nuevo=nuevo_estado,
-                )
+                try:
+                    self.notif_service.notificar_cambio_estado(
+                        perfil_id=perfil_id,
+                        postulacion_id=postulacion_id,
+                        vacante_titulo=vacante.titulo,
+                        empresa=vacante.empresa,
+                        estado_anterior=estado_anterior,
+                        estado_nuevo=nuevo_estado,
+                    )
+                except Exception as e:
+                    print(f"[warning] No se pudo crear notificación: {e}")
 
         return self._enriquecer(postulacion)
 
@@ -78,10 +86,23 @@ class PostulacionService:
             return None
         return self._enriquecer(postulacion)
 
+    def obtener_trazas(self, perfil_id: str, limit: int = 50):
+        return self.repo.get_trazas(perfil_id, limit)
+
     def _enriquecer(self, postulacion) -> PostulacionResponse:
         resp = PostulacionResponse.model_validate(postulacion)
         vacante = self.vacante_repo.get_by_id(postulacion.vacante_id)
         if vacante:
             resp.vacante_titulo = vacante.titulo
             resp.vacante_empresa = vacante.empresa
+        return resp
+
+    def _enriquecer_con_perfil(self, postulacion) -> PostulacionResponse:
+        """Igual a _enriquecer pero también añade el nombre y email del candidato."""
+        resp = self._enriquecer(postulacion)
+        perfil = self.perfil_repo.get_by_id(postulacion.perfil_id)
+        if perfil:
+            # Asumiendo que el response schema tiene estos campos opcionales
+            setattr(resp, "perfil_nombre", perfil.nombre_completo)
+            setattr(resp, "perfil_email", perfil.email)
         return resp

@@ -18,7 +18,6 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
     try {
       const res = await login(email, password)
 
-      // Guardar sesión CON token JWT
       localStorage.setItem("jobagent_session", JSON.stringify({
         perfil_id: res.perfil_id,
         email: res.email,
@@ -26,9 +25,7 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
         access_token: res.access_token,
       }))
 
-      // Ahora que el token está guardado, podemos obtener el perfil
       const perfil = await obtenerPerfil(res.perfil_id)
-
       if (onLoginExitoso) onLoginExitoso(perfil)
     } catch (err) {
       setError(err.message)
@@ -39,31 +36,68 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
 
   return (
     <div style={s.container}>
-      <div style={s.card}>
-        <h1 style={s.title}>Iniciar sesión</h1>
-        <p style={s.subtitle}>Ingresa a tu cuenta de JobAgent</p>
+      <div style={s.card} className="animate-slide-up">
+        {/* Hero */}
+        <div style={s.hero}>
+          <h1 style={s.title}>Iniciar sesión</h1>
+          <p style={s.subtitle}>Ingresa a tu cuenta de JobAgent</p>
+        </div>
 
-        {error && <div style={s.error} role="alert">{error}</div>}
+        {error && (
+          <div style={s.error} role="alert">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={s.form}>
           <div style={s.fieldWrap}>
             <label htmlFor="email" style={s.label}>Email</label>
-            <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" autoComplete="email" required />
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              autoComplete="email"
+              required
+            />
           </div>
 
           <div style={s.fieldWrap}>
             <label htmlFor="password" style={s.label}>Contraseña</label>
-            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Tu contraseña" autoComplete="current-password" required />
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Tu contraseña"
+              autoComplete="current-password"
+              required
+            />
           </div>
 
-          <button type="submit" disabled={loading} style={s.btnPrimary}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ ...s.btnPrimary, opacity: loading ? 0.6 : 1 }}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#0077ed")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#0071e3")}
+          >
             {loading ? "Ingresando..." : "Iniciar sesión"}
           </button>
         </form>
 
         <div style={s.footer}>
           <span style={s.muted}>¿No tienes cuenta? </span>
-          <span onClick={onIrARegistro} style={s.link} role="button" tabIndex={0}>Crear perfil</span>
+          <span
+            onClick={onIrARegistro}
+            style={s.link}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onIrARegistro?.()}
+          >
+            Crear perfil
+          </span>
         </div>
       </div>
     </div>
@@ -71,15 +105,94 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
 }
 
 const s = {
-  container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 },
-  card: { width: "100%", maxWidth: 420, border: "1px solid rgba(0,0,0,0.1)", padding: 40, background: "#fff" },
-  title: { fontSize: 36, marginBottom: 8, letterSpacing: "-0.03em" },
-  subtitle: { fontSize: 16, color: "rgba(0,0,0,0.5)", marginBottom: 32 },
-  error: { color: "#b91c1c", border: "1px solid rgba(185,28,28,0.2)", background: "#fef2f2", padding: "10px 14px", marginBottom: 20, fontSize: 14 },
-  fieldWrap: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 },
-  label: { fontSize: 13, color: "rgba(0,0,0,0.6)", letterSpacing: "0.02em" },
-  btnPrimary: { width: "100%", padding: "14px 28px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 15, cursor: "pointer", marginTop: 8 },
-  footer: { marginTop: 24, textAlign: "center", fontSize: 14 },
-  muted: { color: "rgba(0,0,0,0.5)" },
-  link: { color: "#1a1a1a", cursor: "pointer", borderBottom: "1px solid rgba(0,0,0,0.3)" },
+  container: {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px",
+    background: "var(--background)",
+  },
+  card: {
+    width: "100%",
+    maxWidth: 440,
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    padding: "48px 40px",
+    boxShadow: "var(--shadow-md)",
+  },
+  hero: {
+    textAlign: "center",
+    marginBottom: 36,
+  },
+  title: {
+    fontSize: 40,
+    fontWeight: 600,
+    letterSpacing: "-0.025em",
+    lineHeight: 1.1,
+    marginBottom: 8,
+    color: "var(--foreground)",
+  },
+  subtitle: {
+    fontSize: 17,
+    color: "var(--muted-foreground)",
+    lineHeight: 1.4,
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 18,
+  },
+  fieldWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: "var(--foreground)",
+    letterSpacing: "0.01em",
+    paddingLeft: 4,
+  },
+  btnPrimary: {
+    width: "100%",
+    padding: "13px 28px",
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    border: "none",
+    borderRadius: "var(--radius-full)",
+    fontSize: 17,
+    fontWeight: 400,
+    cursor: "pointer",
+    marginTop: 12,
+    transition: "all 0.2s ease",
+    boxShadow: "var(--shadow-xs)",
+  },
+  error: {
+    color: "var(--destructive)",
+    background: "var(--destructive-bg)",
+    border: "1px solid rgba(255, 59, 48, 0.2)",
+    borderRadius: "var(--radius-md)",
+    padding: "12px 16px",
+    marginBottom: 20,
+    fontSize: 14,
+  },
+  footer: {
+    marginTop: 28,
+    textAlign: "center",
+    fontSize: 15,
+  },
+  muted: {
+    color: "var(--muted-foreground)",
+  },
+  link: {
+    color: "var(--primary)",
+    cursor: "pointer",
+    fontWeight: 500,
+    transition: "opacity 0.2s",
+  },
 }

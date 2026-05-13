@@ -5,10 +5,17 @@ import {
 } from "../api/notificaciones"
 
 const COLORS = {
-  cambio_estado: "#1e40af",
+  cambio_estado: "var(--info)",
   entrevista_programada: "#7c3aed",
-  entrevista_calificada: "#d97706",
-  sistema: "#1a1a1a",
+  entrevista_calificada: "var(--warning)",
+  sistema: "var(--foreground)",
+}
+
+const COLOR_BGS = {
+  cambio_estado: "var(--info-bg)",
+  entrevista_programada: "rgba(124, 58, 237, 0.1)",
+  entrevista_calificada: "var(--warning-bg)",
+  sistema: "rgba(0,0,0,0.04)",
 }
 
 export default function NotificacionesBell({ perfilId }) {
@@ -114,8 +121,14 @@ export default function NotificacionesBell({ perfilId }) {
         onClick={handleAbrir}
         style={{
           ...s.trigger,
-          color: abierto ? "#1a1a1a" : "rgba(0,0,0,0.5)",
+          color: abierto || noLeidas > 0 ? "var(--foreground)" : "var(--muted-foreground)",
           fontWeight: noLeidas > 0 ? 500 : 400,
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--foreground)")}
+        onMouseLeave={(e) => {
+          if (!abierto && noLeidas === 0) {
+            e.currentTarget.style.color = "var(--muted-foreground)"
+          }
         }}
         aria-label={`Notificaciones${noLeidas > 0 ? ` (${noLeidas} sin leer)` : ""}`}
       >
@@ -126,11 +139,16 @@ export default function NotificacionesBell({ perfilId }) {
       </button>
 
       {abierto && (
-        <div style={s.dropdown}>
+        <div style={s.dropdown} className="animate-fade-in">
           <div style={s.header}>
-            <h3 style={{ fontSize: 16, fontWeight: 500 }}>Notificaciones</h3>
+            <h3 style={s.headerTitle}>Notificaciones</h3>
             {noLeidas > 0 && (
-              <button onClick={handleMarcarTodas} style={s.markAllBtn}>
+              <button
+                onClick={handleMarcarTodas}
+                style={s.markAllBtn}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.7)}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
+              >
                 Marcar todas leídas
               </button>
             )}
@@ -138,10 +156,12 @@ export default function NotificacionesBell({ perfilId }) {
 
           <div style={s.list}>
             {loading ? (
-              <p style={s.empty}>Cargando...</p>
+              <div style={s.emptyState}>
+                <div style={s.spinner} />
+              </div>
             ) : notificaciones.length === 0 ? (
-              <div style={s.empty}>
-                <p style={{ fontSize: 14, color: "rgba(0,0,0,0.5)" }}>No tienes notificaciones</p>
+              <div style={s.emptyState}>
+                <p style={s.emptyText}>No tienes notificaciones</p>
               </div>
             ) : (
               notificaciones.map((notif) => (
@@ -150,27 +170,41 @@ export default function NotificacionesBell({ perfilId }) {
                   onClick={() => handleClickNotif(notif)}
                   style={{
                     ...s.item,
-                    background: notif.leida ? "#fff" : "#f9fafb",
-                    borderLeft: `3px solid ${COLORS[notif.tipo] || COLORS.sistema}`,
+                    background: notif.leida ? "transparent" : "var(--accent)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (notif.leida) e.currentTarget.style.background = "rgba(0,0,0,0.025)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = notif.leida ? "transparent" : "var(--accent)"
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: 6, marginBottom: 2,
-                    }}>
-                      {!notif.leida && <span style={s.dotNew} />}
-                      <span style={{
-                        fontSize: 14, fontWeight: notif.leida ? 400 : 500,
-                        color: "#1a1a1a",
-                      }}>
-                        {notif.titulo}
-                      </span>
-                    </div>
-                    <p style={s.msg}>{notif.mensaje}</p>
-                    <span style={s.time}>{fmtFecha(notif.created_at)}</span>
+                  <div style={{
+                    ...s.iconCircle,
+                    background: COLOR_BGS[notif.tipo] || COLOR_BGS.sistema,
+                    color: COLORS[notif.tipo] || COLORS.sistema,
+                  }}>
+                    {!notif.leida && <span style={s.dotNew} />}
                   </div>
-                  <button onClick={(e) => handleEliminar(e, notif.id)} style={s.removeBtn} aria-label="Eliminar">
-                    ✕
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={s.itemTitle}>{notif.titulo}</div>
+                    <p style={s.itemMsg}>{notif.mensaje}</p>
+                    <span style={s.itemTime}>{fmtFecha(notif.created_at)}</span>
+                  </div>
+                  <button
+                    onClick={(e) => handleEliminar(e, notif.id)}
+                    style={s.removeBtn}
+                    aria-label="Eliminar"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(0,0,0,0.06)"
+                      e.currentTarget.style.color = "var(--foreground)"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent"
+                      e.currentTarget.style.color = "var(--muted-foreground)"
+                    }}
+                  >
+                    ×
                   </button>
                 </div>
               ))
@@ -185,48 +219,153 @@ export default function NotificacionesBell({ perfilId }) {
 const s = {
   wrapper: { position: "relative" },
   trigger: {
-    background: "transparent", border: "none", cursor: "pointer",
-    fontSize: 14, padding: "4px 0", display: "inline-flex",
-    alignItems: "center", gap: 6, fontFamily: "inherit",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    fontSize: 12,
+    padding: "4px 0",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    fontFamily: "inherit",
     transition: "color 0.2s",
+    letterSpacing: "0.01em",
   },
   badge: {
-    minWidth: 18, height: 18,
-    background: "#dc2626", color: "#fff", fontSize: 10, fontWeight: 600,
-    borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-    padding: "0 5px",
+    minWidth: 18,
+    height: 18,
+    background: "var(--destructive)",
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: 600,
+    borderRadius: "var(--radius-full)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 6px",
+    lineHeight: 1,
   },
   dropdown: {
-    position: "absolute", top: 36, right: 0, width: 380, maxHeight: 500,
-    background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.08)", overflow: "hidden",
-    display: "flex", flexDirection: "column", zIndex: 100,
+    position: "absolute",
+    top: 32,
+    right: 0,
+    width: 400,
+    maxHeight: 520,
+    background: "rgba(255, 255, 255, 0.92)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    boxShadow: "var(--shadow-lg)",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 100,
   },
   header: {
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "16px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "18px 22px",
+    borderBottom: "1px solid var(--border)",
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: 600,
+    letterSpacing: "-0.01em",
+    color: "var(--foreground)",
   },
   markAllBtn: {
-    background: "transparent", border: "none", color: "#1e40af",
-    fontSize: 12, cursor: "pointer", padding: 0,
+    background: "transparent",
+    border: "none",
+    color: "var(--primary)",
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: "pointer",
+    padding: 0,
+    transition: "opacity 0.2s",
   },
-  list: { overflowY: "auto", maxHeight: 420 },
-  empty: { textAlign: "center", padding: "40px 20px", color: "rgba(0,0,0,0.4)" },
+  list: {
+    overflowY: "auto",
+    maxHeight: 440,
+  },
+  emptyState: {
+    padding: "48px 20px",
+    textAlign: "center",
+  },
+  spinner: {
+    width: 24,
+    height: 24,
+    border: "2.5px solid var(--border)",
+    borderTopColor: "var(--primary)",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+    margin: "0 auto",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "var(--muted-foreground)",
+  },
   item: {
-    display: "flex", gap: 12, padding: "14px 20px",
-    borderBottom: "1px solid rgba(0,0,0,0.05)", cursor: "pointer",
+    display: "flex",
+    gap: 14,
+    padding: "16px 22px",
+    borderBottom: "1px solid var(--border)",
+    cursor: "pointer",
     transition: "background 0.15s",
   },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    position: "relative",
+  },
   dotNew: {
-    width: 6, height: 6, borderRadius: "50%", background: "#1e40af", flexShrink: 0,
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    background: "var(--primary)",
+    boxShadow: "0 0 0 2px var(--background)",
   },
-  msg: {
-    fontSize: 13, color: "rgba(0,0,0,0.65)", lineHeight: 1.4,
-    margin: 0, marginBottom: 4,
+  itemTitle: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "var(--foreground)",
+    marginBottom: 4,
+    letterSpacing: "-0.005em",
+    lineHeight: 1.3,
   },
-  time: { fontSize: 11, color: "rgba(0,0,0,0.4)" },
+  itemMsg: {
+    fontSize: 13,
+    color: "var(--muted-foreground)",
+    lineHeight: 1.45,
+    margin: 0,
+    marginBottom: 6,
+  },
+  itemTime: {
+    fontSize: 11,
+    color: "var(--muted-foreground)",
+    opacity: 0.7,
+  },
   removeBtn: {
-    background: "transparent", border: "none", color: "rgba(0,0,0,0.3)",
-    cursor: "pointer", fontSize: 12, padding: 4, alignSelf: "flex-start",
+    width: 24,
+    height: 24,
+    borderRadius: "50%",
+    background: "transparent",
+    border: "none",
+    color: "var(--muted-foreground)",
+    cursor: "pointer",
+    fontSize: 16,
+    lineHeight: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    alignSelf: "flex-start",
+    transition: "all 0.2s",
   },
 }
