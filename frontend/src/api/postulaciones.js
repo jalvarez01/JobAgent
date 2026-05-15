@@ -1,64 +1,40 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+import { apiFetch } from "./client"
 
-// ─── Postulaciones ───
+const BASE = ""
 
-export async function crearPostulacion({ perfil_id, vacante_id, tipo = "manual", score_match = null }) {
-  const res = await fetch(`${BASE_URL}/postulaciones/`, {
+export async function crearPostulacion(data) {
+  return apiFetch(`${BASE}/postulaciones/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ perfil_id, vacante_id, tipo, score_match }),
+    body: JSON.stringify(data),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Error ${res.status}`)
-  }
-  return res.json()
 }
 
-export async function listarPostulaciones(perfilId) {
-  const res = await fetch(`${BASE_URL}/postulaciones/perfil/${perfilId}`)
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Error ${res.status}`)
-  }
-  return res.json()
+export async function listarPostulaciones(perfil_id) {
+  return apiFetch(`${BASE}/postulaciones/perfil/${perfil_id}`)
 }
 
-export async function cambiarEstado(postulacionId, estado, notas = null) {
-  const res = await fetch(`${BASE_URL}/postulaciones/${postulacionId}/estado`, {
+export async function listarTodasPostulaciones() {
+  return apiFetch(`${BASE}/postulaciones/`)
+}
+
+export async function obtenerPostulacion(id) {
+  return apiFetch(`${BASE}/postulaciones/${id}`)
+}
+
+export async function cambiarEstado(id, estado, notas = null) {
+  return apiFetch(`${BASE}/postulaciones/${id}/estado`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ estado, notas }),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Error ${res.status}`)
-  }
-  return res.json()
 }
 
-// ─── Trazabilidad ───
-
-export async function obtenerTrazas(perfilId, limit = 50) {
-  const res = await fetch(`${BASE_URL}/trazas/${perfilId}?limit=${limit}`)
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Error ${res.status}`)
-  }
-  return res.json()
+export async function obtenerTrazas(perfil_id, limit = 50) {
+  return apiFetch(`${BASE}/trazas/${perfil_id}?limit=${limit}`)
 }
 
-// ─── Pipeline ───
-
-export async function ejecutarPipeline(perfilId, cvTexto = "") {
-  const res = await fetch(`${BASE_URL}/pipeline/ejecutar`, {
+export async function ejecutarPipeline(perfil_id) {
+  return apiFetch(`${BASE}/pipeline/ejecutar`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ perfil_id: perfilId, cv_texto: cvTexto }),
+    body: JSON.stringify({ perfil_id }),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Error ${res.status}`)
-  }
-  return res.json()
 }

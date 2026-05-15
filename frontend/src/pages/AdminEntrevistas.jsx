@@ -46,9 +46,7 @@ export default function AdminEntrevistas({ onVolver }) {
     setLoading(true); setError("")
     try {
       const [ents, pers, vacs] = await Promise.all([
-        listarTodasEntrevistas(),
-        listarPerfiles(),
-        listarTodasVacantes(),
+        listarTodasEntrevistas(), listarPerfiles(), listarTodasVacantes(),
       ])
       setEntrevistas(ents); setPerfiles(pers); setVacantes(vacs)
     } catch (err) { setError(err.message) }
@@ -94,7 +92,6 @@ export default function AdminEntrevistas({ onVolver }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(""); setMensaje("")
-
     if (!form.perfil_id) return setError("Selecciona un candidato")
 
     const payload = {
@@ -135,24 +132,24 @@ export default function AdminEntrevistas({ onVolver }) {
   }) : "—"
 
   const colorPuntaje = (p) => {
-    if (p == null) return "rgba(0,0,0,0.3)"
-    if (p >= 85) return "#059669"
-    if (p >= 70) return "#0891b2"
-    if (p >= 50) return "#d97706"
-    return "#b91c1c"
+    if (p == null) return "var(--muted-foreground)"
+    if (p >= 85) return "var(--success)"
+    if (p >= 70) return "var(--info)"
+    if (p >= 50) return "var(--warning)"
+    return "var(--destructive)"
   }
 
   const colorEstado = (e) => {
-    if (e === "completada") return { color: "#059669", bg: "#d1fae5" }
-    if (e === "programada") return { color: "#1e40af", bg: "#dbeafe" }
-    return { color: "#b91c1c", bg: "#fee2e2" }
+    if (e === "completada") return { color: "var(--success)", bg: "var(--success-bg)" }
+    if (e === "programada") return { color: "var(--info)", bg: "var(--info-bg)" }
+    return { color: "var(--destructive)", bg: "var(--destructive-bg)" }
   }
 
-  // Calcular puntaje promedio en tiempo real
+  // Cálculo en tiempo real
   const subPuntajes = [form.puntaje_tecnico, form.puntaje_comunicacion, form.puntaje_conocimientos, form.puntaje_actitud]
     .map(p => p !== "" ? Number(p) : null).filter(p => p !== null)
   const puntajePromedio = subPuntajes.length > 0
-    ? Math.round(subPuntajes.reduce((s, p) => s + p, 0) / subPuntajes.length)
+    ? Math.round(subPuntajes.reduce((sum, p) => sum + p, 0) / subPuntajes.length)
     : null
   const nivelCalc = puntajePromedio == null ? null
     : puntajePromedio >= 85 ? "Excelente"
@@ -161,14 +158,32 @@ export default function AdminEntrevistas({ onVolver }) {
 
   return (
     <div style={s.container}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
+      <div style={s.heroRow} className="animate-fade-in">
         <div>
           <h1 style={s.title}>Gestión de Entrevistas</h1>
           <p style={s.subtitle}>{entrevistas.length} entrevistas registradas</p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {vista === "lista" && <button onClick={handleNueva} style={s.btnPrimary}>+ Nueva entrevista</button>}
-          <button onClick={onVolver} style={s.btnSec}>← Volver</button>
+        <div style={{ display: "flex", gap: 10 }}>
+          {vista === "lista" && (
+            <button
+              onClick={handleNueva}
+              style={s.btnPrimary}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+            >
+              + Nueva entrevista
+            </button>
+          )}
+          {onVolver && (
+            <button
+              onClick={onVolver}
+              style={s.btnSecondary}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              ← Volver
+            </button>
+          )}
         </div>
       </div>
 
@@ -177,62 +192,97 @@ export default function AdminEntrevistas({ onVolver }) {
 
       {/* LISTA */}
       {vista === "lista" && (
-        <div>
-          <div style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center" }}>
+        <div className="animate-slide-up">
+          <div style={s.filtersRow}>
             <input
               placeholder="Buscar por candidato o vacante..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               style={{ flex: 1 }}
             />
-            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} style={{ width: 180 }}>
+            <select
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+              style={{ width: 200 }}
+            >
               <option value="">Todos los estados</option>
               {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
             </select>
           </div>
 
           {loading ? (
-            <p style={{ textAlign: "center", padding: 60, color: "rgba(0,0,0,0.4)" }}>Cargando...</p>
+            <div style={s.loading}><div style={s.spinner} /></div>
           ) : filtradas.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60 }}>
-              <p>No hay entrevistas</p>
-              <button onClick={handleNueva} style={{ ...s.btnPrimary, marginTop: 16 }}>Crear la primera</button>
+            <div style={s.empty}>
+              <h3 style={s.emptyTitle}>No hay entrevistas</h3>
+              <button
+                onClick={handleNueva}
+                style={{ ...s.btnPrimary, marginTop: 20 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+              >
+                Crear la primera
+              </button>
             </div>
           ) : (
-            <div style={{ border: "1px solid rgba(0,0,0,0.1)", background: "#fff" }}>
+            <div style={s.tableCard}>
               {filtradas.map((ent, i) => {
                 const est = colorEstado(ent.estado)
                 return (
-                  <div key={ent.id} style={{ ...s.row, borderBottom: i < filtradas.length - 1 ? "1px solid rgba(0,0,0,0.06)" : "none" }}>
-                    <div style={{ flex: 2 }}>
-                      <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 2 }}>{ent.perfil_nombre || "—"}</div>
-                      <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)" }}>{ent.perfil_email}</div>
+                  <div
+                    key={ent.id}
+                    style={{
+                      ...s.row,
+                      borderBottom: i < filtradas.length - 1 ? "1px solid var(--border)" : "none",
+                    }}
+                  >
+                    <div style={{ flex: 2, minWidth: 0 }}>
+                      <div style={s.rowTitle}>{ent.perfil_nombre || "—"}</div>
+                      <div style={s.rowSub}>{ent.perfil_email}</div>
                     </div>
-                    <div style={{ flex: 1.5, fontSize: 13, color: "rgba(0,0,0,0.7)" }}>
+                    <div style={{ flex: 1.5, fontSize: 13, color: "var(--muted-foreground)" }}>
                       {ent.vacante_titulo ? (
                         <div>
-                          <div>{ent.vacante_titulo}</div>
-                          <div style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{ent.vacante_empresa}</div>
+                          <div style={{ color: "var(--foreground)", fontSize: 13 }}>{ent.vacante_titulo}</div>
+                          <div style={{ fontSize: 11, opacity: 0.8 }}>{ent.vacante_empresa}</div>
                         </div>
                       ) : "—"}
                     </div>
-                    <div style={{ flex: 1, fontSize: 12 }}>
-                      <span style={s.meta}>{TIPOS.find(t => t.value === ent.tipo)?.label}</span>
+                    <div style={{ flex: 0.8 }}>
+                      <span style={s.tipoChip}>
+                        {TIPOS.find(t => t.value === ent.tipo)?.label}
+                      </span>
                     </div>
-                    <div style={{ flex: 1.2, fontSize: 12, color: "rgba(0,0,0,0.6)" }}>
+                    <div style={{ flex: 1.2, fontSize: 12, color: "var(--muted-foreground)" }}>
                       {fmtFecha(ent.fecha_entrevista)}
                     </div>
-                    <div style={{ flex: 0.6 }}>
+                    <div style={{ flex: 0.7 }}>
                       <span style={{ ...s.estadoChip, color: est.color, background: est.bg }}>
                         {ESTADOS.find(e => e.value === ent.estado)?.label}
                       </span>
                     </div>
-                    <div style={{ flex: 0.5, fontWeight: 600, color: colorPuntaje(ent.puntaje), fontSize: 18 }}>
-                      {ent.puntaje != null ? ent.puntaje : "—"}
+                    <div style={{ flex: 0.5, textAlign: "center" }}>
+                      <span style={{ ...s.puntajeBig, color: colorPuntaje(ent.puntaje) }}>
+                        {ent.puntaje != null ? ent.puntaje : "—"}
+                      </span>
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => handleEditar(ent)} style={s.btnMini}>Editar</button>
-                      <button onClick={() => handleEliminar(ent.id, ent.perfil_nombre)} style={s.btnMiniDanger}>×</button>
+                      <button
+                        onClick={() => handleEditar(ent)}
+                        style={s.btnMini}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleEliminar(ent.id, ent.perfil_nombre)}
+                        style={s.btnMiniDanger}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--destructive-bg)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        ×
+                      </button>
                     </div>
                   </div>
                 )
@@ -244,8 +294,8 @@ export default function AdminEntrevistas({ onVolver }) {
 
       {/* FORMULARIO */}
       {vista === "form" && (
-        <form onSubmit={handleSubmit} style={s.formCard}>
-          <h3 style={{ fontSize: 20, marginBottom: 24 }}>
+        <form onSubmit={handleSubmit} style={s.formCard} className="animate-slide-up">
+          <h3 style={s.formTitle}>
             {editandoId ? "Editar entrevista" : "Nueva entrevista"}
           </h3>
 
@@ -285,7 +335,7 @@ export default function AdminEntrevistas({ onVolver }) {
           </Section>
 
           <Section title="Estado">
-            <div style={s.fieldWrap}>
+            <div style={{ ...s.fieldWrap, maxWidth: 280 }}>
               <label style={s.label}>Estado actual</label>
               <select name="estado" value={form.estado} onChange={handleChange}>
                 {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
@@ -294,46 +344,26 @@ export default function AdminEntrevistas({ onVolver }) {
           </Section>
 
           <Section title="Evaluación por categorías">
-            <p style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", marginBottom: 16 }}>
+            <p style={s.helpText}>
               Asigna un puntaje de 0 a 100 a cada categoría. El puntaje total se calcula automáticamente como promedio.
             </p>
 
-            <ScoreSlider
-              label="Habilidades técnicas"
-              name="puntaje_tecnico"
-              value={form.puntaje_tecnico}
-              onChange={handleChange}
-            />
-            <ScoreSlider
-              label="Comunicación"
-              name="puntaje_comunicacion"
-              value={form.puntaje_comunicacion}
-              onChange={handleChange}
-            />
-            <ScoreSlider
-              label="Conocimientos del área"
-              name="puntaje_conocimientos"
-              value={form.puntaje_conocimientos}
-              onChange={handleChange}
-            />
-            <ScoreSlider
-              label="Actitud y motivación"
-              name="puntaje_actitud"
-              value={form.puntaje_actitud}
-              onChange={handleChange}
-            />
+            <ScoreSlider label="Habilidades técnicas" name="puntaje_tecnico" value={form.puntaje_tecnico} onChange={handleChange} />
+            <ScoreSlider label="Comunicación" name="puntaje_comunicacion" value={form.puntaje_comunicacion} onChange={handleChange} />
+            <ScoreSlider label="Conocimientos del área" name="puntaje_conocimientos" value={form.puntaje_conocimientos} onChange={handleChange} />
+            <ScoreSlider label="Actitud y motivación" name="puntaje_actitud" value={form.puntaje_actitud} onChange={handleChange} />
 
             {puntajePromedio != null && (
-              <div style={{ marginTop: 20, padding: 16, background: "#fafafa", border: "1px solid rgba(0,0,0,0.08)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 14, color: "rgba(0,0,0,0.6)" }}>Puntaje total calculado</span>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 28, fontWeight: 600, color: colorPuntaje(puntajePromedio) }}>
-                      {puntajePromedio}/100
-                    </div>
-                    <div style={{ fontSize: 12, color: colorPuntaje(puntajePromedio), fontWeight: 500 }}>
-                      Nivel: {nivelCalc}
-                    </div>
+              <div style={s.totalScoreCard}>
+                <div>
+                  <span style={s.totalScoreLabel}>Puntaje total calculado</span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ ...s.totalScoreValue, color: colorPuntaje(puntajePromedio) }}>
+                    {puntajePromedio}<span style={s.totalScoreMax}>/100</span>
+                  </div>
+                  <div style={{ ...s.totalScoreNivel, color: colorPuntaje(puntajePromedio) }}>
+                    Nivel: {nivelCalc}
                   </div>
                 </div>
               </div>
@@ -343,33 +373,53 @@ export default function AdminEntrevistas({ onVolver }) {
           <Section title="Feedback al candidato">
             <div style={s.fieldWrap}>
               <label style={s.label}>Fortalezas</label>
-              <textarea name="fortalezas" value={form.fortalezas} onChange={handleChange} rows={2}
-                placeholder="Lo que el candidato hizo bien" style={{ resize: "vertical" }} />
+              <textarea
+                name="fortalezas" value={form.fortalezas} onChange={handleChange}
+                rows={2} placeholder="Lo que el candidato hizo bien"
+              />
             </div>
-            <div style={{ ...s.fieldWrap, marginTop: 12 }}>
+            <div style={{ ...s.fieldWrap, marginTop: 14 }}>
               <label style={s.label}>Áreas de mejora</label>
-              <textarea name="debilidades" value={form.debilidades} onChange={handleChange} rows={2}
-                placeholder="Qué puede mejorar" style={{ resize: "vertical" }} />
+              <textarea
+                name="debilidades" value={form.debilidades} onChange={handleChange}
+                rows={2} placeholder="Qué puede mejorar"
+              />
             </div>
-            <div style={{ ...s.fieldWrap, marginTop: 12 }}>
+            <div style={{ ...s.fieldWrap, marginTop: 14 }}>
               <label style={s.label}>Recomendaciones</label>
-              <textarea name="recomendaciones" value={form.recomendaciones} onChange={handleChange} rows={2}
-                placeholder="Sugerencias para próximas entrevistas" style={{ resize: "vertical" }} />
+              <textarea
+                name="recomendaciones" value={form.recomendaciones} onChange={handleChange}
+                rows={2} placeholder="Sugerencias para próximas entrevistas"
+              />
             </div>
           </Section>
 
-          <Section title="Notas internas (no visibles para el candidato)">
+          <Section title="Notas internas">
+            <p style={s.helpText}>Solo visibles para el equipo de RH, nunca para el candidato.</p>
             <div style={s.fieldWrap}>
-              <textarea name="notas_admin" value={form.notas_admin} onChange={handleChange} rows={2}
-                placeholder="Notas privadas del equipo de RH" style={{ resize: "vertical" }} />
+              <textarea
+                name="notas_admin" value={form.notas_admin} onChange={handleChange}
+                rows={2} placeholder="Notas privadas del equipo"
+              />
             </div>
           </Section>
 
-          <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
-            <button type="button" onClick={() => { setVista("lista"); setError(""); setMensaje("") }} style={s.btnSec}>
+          <div style={s.actions}>
+            <button
+              type="button"
+              onClick={() => { setVista("lista"); setError(""); setMensaje("") }}
+              style={s.btnSecondary}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
               Cancelar
             </button>
-            <button type="submit" style={s.btnPrimary}>
+            <button
+              type="submit"
+              style={s.btnPrimary}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+            >
               {editandoId ? "Guardar cambios" : "Crear entrevista"}
             </button>
           </div>
@@ -381,29 +431,32 @@ export default function AdminEntrevistas({ onVolver }) {
 
 function ScoreSlider({ label, name, value, onChange }) {
   const numValue = value !== "" ? Number(value) : 0
-  const colorBar = numValue >= 85 ? "#059669"
-    : numValue >= 70 ? "#0891b2"
-    : numValue >= 50 ? "#d97706" : "#b91c1c"
+  const color = numValue >= 85 ? "var(--success)"
+    : numValue >= 70 ? "var(--info)"
+    : numValue >= 50 ? "var(--warning)" : "var(--destructive)"
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <label style={{ fontSize: 13, color: "rgba(0,0,0,0.7)" }}>{label}</label>
-        <span style={{ fontSize: 13, fontWeight: 500, color: value !== "" ? colorBar : "rgba(0,0,0,0.3)" }}>
+      <div style={s.sliderHeader}>
+        <label style={s.sliderLabel}>{label}</label>
+        <span style={{
+          ...s.sliderValue,
+          color: value !== "" ? color : "var(--muted-foreground)",
+        }}>
           {value !== "" ? `${value}/100` : "Sin puntaje"}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+      <div style={s.sliderRow}>
         <input
           type="range" min="0" max="100"
           name={name} value={value !== "" ? value : 0}
           onChange={onChange}
-          style={{ flex: 1, accentColor: colorBar }}
+          style={{ ...s.rangeInput, accentColor: color }}
         />
         <input
           type="number" min="0" max="100"
           name={name} value={value} onChange={onChange}
-          placeholder="—" style={{ width: 70, textAlign: "center" }}
+          placeholder="—" style={{ width: 80, textAlign: "center" }}
         />
       </div>
     </div>
@@ -412,8 +465,8 @@ function ScoreSlider({ label, name, value, onChange }) {
 
 function Section({ title, children }) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      <h4 style={{ fontSize: 14, color: "#1a1a1a", marginBottom: 14, fontWeight: 500, paddingBottom: 8, borderBottom: "1px solid rgba(0,0,0,0.08)" }}>{title}</h4>
+    <div style={s.section}>
+      <h4 style={s.sectionTitle}>{title}</h4>
       {children}
     </div>
   )
@@ -429,20 +482,279 @@ function Field({ label, name, value, onChange, type = "text", placeholder }) {
 }
 
 const s = {
-  container: { maxWidth: 1100, margin: "0 auto", padding: "40px 24px" },
-  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em", color: "#1a1a1a" },
-  subtitle: { fontSize: 14, color: "rgba(0,0,0,0.55)" },
-  error: { color: "#b91c1c", border: "1px solid rgba(185,28,28,0.2)", background: "#fef2f2", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
-  success: { color: "#059669", border: "1px solid rgba(5,150,105,0.2)", background: "#d1fae5", padding: "10px 14px", marginBottom: 16, fontSize: 14 },
-  row: { display: "flex", alignItems: "center", padding: "14px 16px", gap: 12 },
-  meta: { fontSize: 11, padding: "2px 8px", border: "1px solid rgba(0,0,0,0.1)", color: "rgba(0,0,0,0.6)" },
-  estadoChip: { fontSize: 11, padding: "2px 8px", fontWeight: 500 },
-  btnPrimary: { padding: "12px 24px", background: "#1a1a1a", color: "#fff", border: "none", fontSize: 14, cursor: "pointer" },
-  btnSec: { padding: "10px 20px", background: "#fff", color: "#1a1a1a", border: "1px solid rgba(0,0,0,0.15)", fontSize: 13, cursor: "pointer" },
-  btnMini: { fontSize: 12, padding: "4px 10px", background: "#fff", color: "rgba(0,0,0,0.7)", border: "1px solid rgba(0,0,0,0.15)", cursor: "pointer" },
-  btnMiniDanger: { fontSize: 12, padding: "4px 10px", background: "#fff", color: "#b91c1c", border: "1px solid rgba(185,28,28,0.2)", cursor: "pointer" },
-  formCard: { border: "1px solid rgba(0,0,0,0.1)", padding: 32, background: "#fff" },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
-  fieldWrap: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 4 },
-  label: { fontSize: 13, color: "rgba(0,0,0,0.6)", letterSpacing: "0.02em" },
+  container: {
+    maxWidth: 1180,
+    margin: "0 auto",
+    padding: "60px 24px 80px",
+  },
+  heroRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 20,
+    marginBottom: 32,
+    flexWrap: "wrap",
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: 600,
+    letterSpacing: "-0.03em",
+    lineHeight: 1.08,
+    marginBottom: 8,
+    color: "var(--foreground)",
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "var(--muted-foreground)",
+  },
+  error: {
+    color: "var(--destructive)",
+    background: "var(--destructive-bg)",
+    border: "1px solid rgba(255, 59, 48, 0.2)",
+    borderRadius: "var(--radius-md)",
+    padding: "12px 16px",
+    marginBottom: 16,
+    fontSize: 14,
+  },
+  success: {
+    color: "#1d7d3f",
+    background: "var(--success-bg)",
+    border: "1px solid rgba(52, 199, 89, 0.25)",
+    borderRadius: "var(--radius-md)",
+    padding: "12px 16px",
+    marginBottom: 16,
+    fontSize: 14,
+  },
+  filtersRow: {
+    display: "flex",
+    gap: 10,
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  loading: { display: "flex", justifyContent: "center", padding: 80 },
+  spinner: {
+    width: 28, height: 28,
+    border: "3px solid var(--border)",
+    borderTopColor: "var(--primary)",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+  },
+  empty: {
+    textAlign: "center",
+    padding: 80,
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+  },
+  emptyTitle: {
+    fontSize: 19,
+    fontWeight: 600,
+    marginBottom: 8,
+    color: "var(--foreground)",
+  },
+  tableCard: {
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    overflow: "hidden",
+    boxShadow: "var(--shadow-sm)",
+  },
+  row: {
+    display: "flex",
+    alignItems: "center",
+    padding: "14px 18px",
+    gap: 12,
+    transition: "background 0.15s",
+  },
+  rowTitle: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "var(--foreground)",
+    marginBottom: 2,
+    letterSpacing: "-0.005em",
+  },
+  rowSub: {
+    fontSize: 12,
+    color: "var(--muted-foreground)",
+  },
+  tipoChip: {
+    fontSize: 11,
+    color: "var(--muted-foreground)",
+    padding: "3px 10px",
+    background: "rgba(0,0,0,0.04)",
+    borderRadius: "var(--radius-full)",
+  },
+  estadoChip: {
+    fontSize: 11,
+    padding: "3px 10px",
+    fontWeight: 500,
+    borderRadius: "var(--radius-full)",
+  },
+  puntajeBig: {
+    fontSize: 22,
+    fontWeight: 600,
+    letterSpacing: "-0.02em",
+  },
+  btnMini: {
+    fontSize: 12,
+    fontWeight: 500,
+    padding: "6px 14px",
+    background: "transparent",
+    color: "var(--foreground)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "var(--radius-full)",
+    cursor: "pointer",
+    transition: "background 0.2s",
+  },
+  btnMiniDanger: {
+    fontSize: 16,
+    padding: "4px 10px",
+    background: "transparent",
+    color: "var(--destructive)",
+    border: "1px solid rgba(255, 59, 48, 0.2)",
+    borderRadius: "var(--radius-full)",
+    cursor: "pointer",
+    transition: "background 0.2s",
+    lineHeight: 1,
+  },
+  // Form
+  formCard: {
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    padding: 32,
+    boxShadow: "var(--shadow-sm)",
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: 600,
+    letterSpacing: "-0.02em",
+    marginBottom: 28,
+    color: "var(--foreground)",
+  },
+  section: {
+    marginBottom: 28,
+    paddingBottom: 24,
+    borderBottom: "1px solid var(--border)",
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: "var(--foreground)",
+    marginBottom: 16,
+    letterSpacing: "-0.005em",
+  },
+  helpText: {
+    fontSize: 13,
+    color: "var(--muted-foreground)",
+    marginBottom: 16,
+    lineHeight: 1.4,
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 14,
+  },
+  fieldWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: "var(--foreground)",
+    paddingLeft: 4,
+  },
+  // Slider
+  sliderHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sliderLabel: {
+    fontSize: 14,
+    color: "var(--foreground)",
+    fontWeight: 500,
+  },
+  sliderValue: {
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  sliderRow: {
+    display: "flex",
+    gap: 14,
+    alignItems: "center",
+  },
+  rangeInput: {
+    flex: 1,
+    cursor: "pointer",
+  },
+  totalScoreCard: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 24,
+    padding: "20px 24px",
+    background: "rgba(0,0,0,0.025)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+  },
+  totalScoreLabel: {
+    fontSize: 14,
+    color: "var(--muted-foreground)",
+    fontWeight: 500,
+  },
+  totalScoreValue: {
+    fontSize: 36,
+    fontWeight: 600,
+    letterSpacing: "-0.02em",
+    lineHeight: 1,
+  },
+  totalScoreMax: {
+    fontSize: 18,
+    color: "var(--muted-foreground)",
+    fontWeight: 400,
+  },
+  totalScoreNivel: {
+    fontSize: 13,
+    fontWeight: 500,
+    marginTop: 4,
+  },
+  actions: {
+    display: "flex",
+    gap: 12,
+    justifyContent: "flex-end",
+    marginTop: 8,
+    flexWrap: "wrap",
+  },
+  btnPrimary: {
+    padding: "11px 22px",
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    border: "none",
+    borderRadius: "var(--radius-full)",
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.2s ease",
+  },
+  btnSecondary: {
+    padding: "11px 22px",
+    background: "transparent",
+    color: "var(--foreground)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "var(--radius-full)",
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.2s ease",
+  },
 }

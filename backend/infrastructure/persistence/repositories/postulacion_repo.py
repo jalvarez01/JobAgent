@@ -61,6 +61,14 @@ class PostulacionRepository:
             .all()
         )
 
+    def get_all(self) -> list[PostulacionModel]:
+        """Lista todas las postulaciones del sistema. Solo para uso del admin."""
+        return (
+            self.db.query(PostulacionModel)
+            .order_by(PostulacionModel.updated_at.desc())
+            .all()
+        )
+
     def update_estado(self, postulacion_id: str, estado: str, notas: str = None) -> Optional[PostulacionModel]:
         postulacion = self.get_by_id(postulacion_id)
         if not postulacion:
@@ -71,13 +79,12 @@ class PostulacionRepository:
         if notas:
             postulacion.notas = notas
 
-        # Registrar traza de cambio de estado
         traza = TrazaModel(
             perfil_id=postulacion.perfil_id,
             postulacion_id=postulacion_id,
             tipo="estado_cambiado",
             descripcion=f"Estado cambiado: {estado_anterior} → {estado}",
-            origen="sistema",
+            origen="admin",
             extra_data=json.dumps({"estado_anterior": estado_anterior, "estado_nuevo": estado}),
         )
         self.db.add(traza)

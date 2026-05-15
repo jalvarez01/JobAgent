@@ -4,8 +4,9 @@ from backend.infrastructure.persistence.models.postulacion import PostulacionMod
 from backend.infrastructure.persistence.models.traza import TrazaModel
 from backend.infrastructure.persistence.models.favorito import FavoritoModel
 from backend.infrastructure.persistence.models.entrevista import EntrevistaModel
+from backend.infrastructure.persistence.models.notificacion import NotificacionModel
 
 __all__ = [
     "PerfilModel", "VacanteModel", "PostulacionModel",
-    "TrazaModel", "FavoritoModel", "EntrevistaModel",
+    "TrazaModel", "FavoritoModel", "EntrevistaModel", "NotificacionModel",
 ]

@@ -1,31 +1,48 @@
 export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaciones }) {
   if (!perfil) return null
 
+  const fmtSalario = () => {
+    const min = perfil.aspiracion_salarial_min
+    const max = perfil.aspiracion_salarial_max
+    if (!min && !max) return null
+    const f = (n) => `$${Number(n).toLocaleString("es-CO")}`
+    if (min && max) return `${f(min)} - ${f(max)} COP`
+    return min ? `Desde ${f(min)} COP` : `Hasta ${f(max)} COP`
+  }
+
   return (
     <div style={s.container}>
-      <div style={s.hero}>
+      {/* Hero */}
+      <div style={s.hero} className="animate-fade-in">
         <h1 style={s.title}>Perfil</h1>
         <p style={s.subtitle}>Gestiona tu información y preferencias</p>
       </div>
 
-      {/* Profile card */}
-      <div style={s.card}>
+      {/* Card principal */}
+      <div style={s.card} className="animate-slide-up">
         <div style={s.cardHeader}>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <div style={s.avatar}>{perfil.nombre_completo?.charAt(0) || "?"}</div>
             <div>
-              <h2 style={{ fontSize: 28, marginBottom: 4, color: "#1a1a1a" }}>{perfil.nombre_completo}</h2>
-              <p style={s.muted}>{perfil.cargo_actual || "Sin cargo definido"}</p>
+              <h2 style={s.name}>{perfil.nombre_completo}</h2>
+              <p style={s.cargoMuted}>{perfil.cargo_actual || "Sin cargo definido"}</p>
             </div>
           </div>
-          <button onClick={onEditar} style={s.btnSecondary}>Editar perfil</button>
+          <button
+            onClick={onEditar}
+            style={s.btnSecondary}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            Editar perfil
+          </button>
         </div>
 
         {/* Completitud */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={s.muted}>Completitud del perfil</span>
-            <span style={{ fontSize: 14, color: "#1a1a1a" }}>{perfil.completitud}%</span>
+        <div style={s.completitudWrap}>
+          <div style={s.completitudHeader}>
+            <span style={s.completitudLabel}>Completitud del perfil</span>
+            <span style={s.completitudValue}>{perfil.completitud}%</span>
           </div>
           <div style={s.progressContainer}>
             <div style={{ ...s.progressBar, width: `${perfil.completitud}%` }} />
@@ -45,62 +62,70 @@ export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaci
         </div>
 
         {perfil.resumen_profesional && (
-          <div style={{ marginTop: 20, padding: 16, background: "#fafafa" }}>
-            <span style={s.labelSmall}>Resumen profesional</span>
-            <p style={{ fontSize: 14, color: "#1a1a1a", marginTop: 6, lineHeight: 1.6 }}>
-              {perfil.resumen_profesional}
-            </p>
+          <div style={s.resumenBox}>
+            <span style={s.itemLabel}>Resumen profesional</span>
+            <p style={s.resumenText}>{perfil.resumen_profesional}</p>
           </div>
         )}
       </div>
 
       {/* Skills */}
-      <div style={s.card}>
+      <div style={s.card} className="animate-slide-up">
         <h3 style={s.sectionTitle}>Habilidades</h3>
         <div style={s.tags}>
           {perfil.skills?.length > 0 ? (
             perfil.skills.map((sk) => <span key={sk} style={s.tag}>{sk}</span>)
           ) : (
-            <span style={s.muted}>Sin skills registrados</span>
+            <span style={s.muted}>Sin habilidades registradas</span>
           )}
         </div>
       </div>
 
       {/* Preferencias */}
-      <div style={s.card}>
+      <div style={s.card} className="animate-slide-up">
         <h3 style={s.sectionTitle}>Preferencias laborales</h3>
         <div style={s.grid2}>
-          <InfoItem label="Salario esperado" value={
-            perfil.aspiracion_salarial_min || perfil.aspiracion_salarial_max
-              ? `$${(perfil.aspiracion_salarial_min || 0).toLocaleString()} - $${(perfil.aspiracion_salarial_max || 0).toLocaleString()} COP`
-              : null
-          } />
+          <InfoItem label="Salario esperado" value={fmtSalario()} />
           <InfoItem label="Modalidad" value={perfil.modalidad_preferida} />
           <InfoItem label="Disponibilidad" value={perfil.disponibilidad} />
         </div>
       </div>
 
       {/* Stats */}
-      <div style={s.statsGrid}>
+      <div style={s.statsGrid} className="animate-slide-up">
         <div style={s.statCard}>
           <div style={s.statValue}>{perfil.skills?.length || 0}</div>
-          <div style={s.muted}>Skills</div>
+          <div style={s.statLabel}>Habilidades</div>
         </div>
         <div style={s.statCard}>
           <div style={s.statValue}>{perfil.completitud}%</div>
-          <div style={s.muted}>Completitud</div>
+          <div style={s.statLabel}>Completitud</div>
         </div>
         <div style={s.statCard}>
           <div style={s.statValue}>{perfil.experiencia_anos || 0}</div>
-          <div style={s.muted}>Años exp.</div>
+          <div style={s.statLabel}>Años de experiencia</div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
-        <button onClick={onVolver} style={s.btnSecondary}>← Inicio</button>
+      {/* Acciones */}
+      <div style={s.actions}>
+        <button
+          onClick={onVolver}
+          style={s.btnSecondary}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          ← Inicio
+        </button>
         {onVerRecomendaciones && (
-          <button onClick={onVerRecomendaciones} style={s.btnPrimary}>Ver vacantes recomendadas →</button>
+          <button
+            onClick={onVerRecomendaciones}
+            style={s.btnPrimary}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+          >
+            Ver vacantes recomendadas
+          </button>
         )}
       </div>
     </div>
@@ -109,55 +134,221 @@ export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaci
 
 function InfoItem({ label, value }) {
   return (
-    <div style={{ padding: 14, background: "#fafafa" }}>
-      <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 14, color: value ? "#1a1a1a" : "rgba(0,0,0,0.25)" }}>{value || "—"}</div>
+    <div style={s.infoItem}>
+      <div style={s.itemLabel}>{label}</div>
+      <div style={{ ...s.itemValue, color: value ? "var(--foreground)" : "var(--muted-foreground)" }}>
+        {value || "—"}
+      </div>
     </div>
   )
 }
 
 const s = {
-  container: { maxWidth: 800, margin: "0 auto", padding: "40px 24px" },
-  hero: { marginBottom: 40 },
-  title: { fontSize: 48, marginBottom: 8, letterSpacing: "-0.03em", color: "#1a1a1a" },
-  subtitle: { fontSize: 18, color: "rgba(0,0,0,0.55)" },
+  container: {
+    maxWidth: 820,
+    margin: "0 auto",
+    padding: "60px 24px 80px",
+  },
+  hero: {
+    marginBottom: 40,
+    textAlign: "center",
+  },
+  title: {
+    fontSize: 56,
+    fontWeight: 600,
+    letterSpacing: "-0.03em",
+    lineHeight: 1.08,
+    marginBottom: 12,
+    color: "var(--foreground)",
+  },
+  subtitle: {
+    fontSize: 21,
+    color: "var(--muted-foreground)",
+    lineHeight: 1.4,
+    fontWeight: 400,
+  },
   card: {
-    border: "1px solid rgba(0,0,0,0.1)", padding: 32, marginBottom: 16, background: "#fff",
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    padding: 32,
+    marginBottom: 16,
+    boxShadow: "var(--shadow-sm)",
   },
   cardHeader: {
-    display: "flex", justifyContent: "space-between",
-    alignItems: "flex-start", marginBottom: 32,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 32,
+    flexWrap: "wrap",
+    gap: 16,
   },
   avatar: {
-    width: 64, height: 64, display: "flex", alignItems: "center",
-    justifyContent: "center", fontSize: 24, color: "#fff",
-    background: "linear-gradient(135deg, #6366f1, #ec4899)",
+    width: 72,
+    height: 72,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 28,
+    fontWeight: 500,
+    color: "#fff",
+    background: "linear-gradient(135deg, #007aff 0%, #5856d6 100%)",
+    flexShrink: 0,
   },
-  sectionTitle: { fontSize: 16, color: "#1a1a1a", marginBottom: 16, fontWeight: 500 },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
-  labelSmall: { fontSize: 12, color: "rgba(0,0,0,0.5)" },
-  muted: { color: "rgba(0,0,0,0.55)", fontSize: 14 },
-  tags: { display: "flex", flexWrap: "wrap", gap: 8 },
+  name: {
+    fontSize: 28,
+    fontWeight: 600,
+    letterSpacing: "-0.02em",
+    marginBottom: 4,
+    color: "var(--foreground)",
+  },
+  cargoMuted: {
+    fontSize: 15,
+    color: "var(--muted-foreground)",
+  },
+  completitudWrap: {
+    marginBottom: 32,
+  },
+  completitudHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  completitudLabel: {
+    fontSize: 13,
+    color: "var(--muted-foreground)",
+    fontWeight: 500,
+  },
+  completitudValue: {
+    fontSize: 13,
+    color: "var(--foreground)",
+    fontWeight: 600,
+  },
+  progressContainer: {
+    height: 6,
+    background: "rgba(0,0,0,0.06)",
+    borderRadius: "var(--radius-full)",
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    background: "var(--primary)",
+    borderRadius: "var(--radius-full)",
+    transition: "width 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)",
+  },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: 600,
+    letterSpacing: "-0.01em",
+    marginBottom: 18,
+    color: "var(--foreground)",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
+  },
+  infoItem: {
+    padding: 16,
+    background: "rgba(0,0,0,0.025)",
+    borderRadius: "var(--radius-md)",
+  },
+  itemLabel: {
+    fontSize: 12,
+    color: "var(--muted-foreground)",
+    marginBottom: 6,
+    fontWeight: 500,
+    letterSpacing: "0.01em",
+  },
+  itemValue: {
+    fontSize: 15,
+    fontWeight: 400,
+  },
+  resumenBox: {
+    marginTop: 20,
+    padding: 18,
+    background: "rgba(0,0,0,0.025)",
+    borderRadius: "var(--radius-md)",
+  },
+  resumenText: {
+    fontSize: 15,
+    color: "var(--foreground)",
+    marginTop: 8,
+    lineHeight: 1.6,
+  },
+  tags: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   tag: {
-    padding: "6px 14px", border: "1px solid rgba(0,0,0,0.15)",
-    background: "#fff", fontSize: 13, color: "#1a1a1a",
+    padding: "7px 16px",
+    background: "var(--accent)",
+    color: "var(--accent-foreground)",
+    fontSize: 13,
+    fontWeight: 500,
+    borderRadius: "var(--radius-full)",
+  },
+  muted: {
+    color: "var(--muted-foreground)",
+    fontSize: 14,
   },
   statsGrid: {
-    display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 16,
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 32,
   },
   statCard: {
-    border: "1px solid rgba(0,0,0,0.1)", padding: 24,
-    textAlign: "center", background: "#fff",
+    background: "var(--card)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    padding: 28,
+    textAlign: "center",
+    boxShadow: "var(--shadow-sm)",
   },
-  statValue: { fontSize: 36, marginBottom: 4, color: "#1a1a1a" },
-  progressContainer: { height: 4, background: "#f0f0f0" },
-  progressBar: { height: "100%", background: "#1a1a1a", transition: "width 0.3s" },
+  statValue: {
+    fontSize: 40,
+    fontWeight: 600,
+    marginBottom: 6,
+    color: "var(--foreground)",
+    letterSpacing: "-0.02em",
+  },
+  statLabel: {
+    fontSize: 13,
+    color: "var(--muted-foreground)",
+  },
+  actions: {
+    display: "flex",
+    gap: 12,
+    flexWrap: "wrap",
+  },
   btnPrimary: {
-    padding: "14px 28px", background: "#1a1a1a", color: "#fff",
-    border: "none", fontSize: 14, cursor: "pointer",
+    padding: "13px 28px",
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    border: "none",
+    borderRadius: "var(--radius-full)",
+    fontSize: 15,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.2s ease",
   },
   btnSecondary: {
-    padding: "12px 24px", background: "#fff", color: "#1a1a1a",
-    border: "1px solid rgba(0,0,0,0.15)", fontSize: 14, cursor: "pointer",
+    padding: "13px 24px",
+    background: "transparent",
+    color: "var(--foreground)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "var(--radius-full)",
+    fontSize: 15,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.2s ease",
   },
 }

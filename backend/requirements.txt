@@ -61,3 +61,23 @@ uvicorn==0.39.0
 yarl==1.22.0
 zstandard==0.25.0
 langgraph==0.2.60
+
+# -----
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+sqlalchemy>=2.0.0
+pydantic>=2.0.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+ 
+# AI / Agents
+langchain>=0.3.0
+langchain-groq>=0.2.0
+langgraph>=0.2.60
+ 
+# Document parsing
+pymupdf4llm>=0.0.17
+docx2txt>=0.8
+ 
+# Auth
+PyJWT>=2.8.0

@@ -34,4 +34,8 @@ class PostulacionResponse(BaseModel):
     vacante_titulo: Optional[str] = None
     vacante_empresa: Optional[str] = None
 
+    # Datos del candidato (se llenan en el servicio para vistas de admin)
+    perfil_nombre: Optional[str] = None
+    perfil_email: Optional[str] = None
+
     model_config = {"from_attributes": True}
