@@ -11,6 +11,7 @@ charset-normalizer==3.4.7
 click==8.1.8
 dataclasses-json==0.6.7
 distro==1.9.0
+docx2txt==0.9
 exceptiongroup==1.3.1
 fastapi==0.128.8
 frozenlist==1.8.0
@@ -28,6 +29,9 @@ langchain-core==0.3.84
 langchain-groq==0.3.8
 langchain-pymupdf4llm==0.4.1
 langchain-text-splitters==0.3.11
+langgraph==0.2.60
+langgraph-checkpoint==2.1.2
+langgraph-sdk==0.1.74
 langsmith==0.4.37
 lxml==6.0.3
 marshmallow==3.26.2
@@ -35,11 +39,13 @@ multidict==6.7.1
 mypy_extensions==1.1.0
 numpy==2.0.2
 orjson==3.11.5
+ormsgpack==1.12.2
 packaging==25.0
 propcache==0.4.1
 pydantic==2.12.5
 pydantic-settings==2.11.0
 pydantic_core==2.41.5
+PyJWT==2.12.1
 PyMuPDF==1.26.5
 pymupdf4llm==0.0.27
 python-docx==1.2.0
@@ -60,24 +66,3 @@ uuid_utils==0.14.1
 uvicorn==0.39.0
 yarl==1.22.0
 zstandard==0.25.0
-langgraph==0.2.60
-
-# -----
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-sqlalchemy>=2.0.0
-pydantic>=2.0.0
-python-multipart>=0.0.9
-python-dotenv>=1.0.0
- 
-# AI / Agents
-langchain>=0.3.0
-langchain-groq>=0.2.0
-langgraph>=0.2.60
- 
-# Document parsing
-pymupdf4llm>=0.0.17
-docx2txt>=0.8
- 
-# Auth
-PyJWT>=2.8.0

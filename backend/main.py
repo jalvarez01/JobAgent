@@ -5,10 +5,11 @@ from backend.config import ALLOWED_ORIGINS, DATA_DIR
 from backend.infrastructure.persistence.database import init_db, SessionLocal
 from backend.infrastructure.persistence.repositories.vacante_repo import VacanteRepository
 from backend.infrastructure.persistence.models import password_reset_token  # noqa: F401
+from backend.infrastructure.persistence.models import skill_aprendizaje  # noqa: F401
 
 from backend.api import (
     cv, perfil, vacantes, postulaciones, trazabilidad, pipeline,
-    auth, favoritos, entrevistas, notificaciones, recuperacion, dashboard,
+    auth, favoritos, entrevistas, notificaciones, recuperacion, dashboard, brechas,
 )
 
 app = FastAPI(
@@ -36,6 +37,7 @@ app.include_router(favoritos.router, prefix="/favoritos", tags=["Favoritos"])
 app.include_router(entrevistas.router, prefix="/entrevistas", tags=["Entrevistas"])
 app.include_router(notificaciones.router, prefix="/notificaciones", tags=["Notificaciones"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+app.include_router(brechas.router, prefix="/brechas", tags=["Brechas"])
 
 
 @app.on_event("startup")
