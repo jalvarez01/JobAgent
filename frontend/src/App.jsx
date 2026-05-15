@@ -15,14 +15,40 @@ import Favoritos from "./pages/Favoritos"
 import Entrevistas from "./pages/Entrevistas"
 import Ayuda from "./pages/Ayuda"
 import NotificacionesBell from "./pages/NotificacionesBell"
+import RecuperarPassword from "./pages/RecuperarPassword"
+import ResetPassword from "./pages/ResetPassword"
 
 const ADMIN_USER = "admin"
 const ADMIN_PASS = "admin"
 
 function App() {
-  const isAdmin = window.location.pathname.startsWith("/admin")
-  if (isAdmin) return <AdminApp />
+  const path = window.location.pathname
+
+  // Ruta especial: enlace de reset directo desde el "email"
+  if (path === "/reset-password") {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get("token")
+    return <ResetPasswordRoute token={token} />
+  }
+
+  if (path.startsWith("/admin")) return <AdminApp />
   return <MainApp />
+}
+
+function ResetPasswordRoute({ token }) {
+  const irAlInicio = () => { window.location.href = "/" }
+  return (
+    <div>
+      <SimpleNav onLogoClick={irAlInicio} />
+      <main style={s.main}>
+        <ResetPassword
+          token={token}
+          onVolverLogin={irAlInicio}
+          onPasswordCambiado={irAlInicio}
+        />
+      </main>
+    </div>
+  )
 }
 
 function MainApp() {
@@ -31,6 +57,7 @@ function MainApp() {
   const [vacanteSeleccionada, setVacanteSeleccionada] = useState(null)
   const [cargandoSesion, setCargandoSesion] = useState(true)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [tokenRecuperacion, setTokenRecuperacion] = useState(null)
 
   useEffect(() => {
     const restaurarSesion = async () => {
@@ -107,7 +134,46 @@ function MainApp() {
         </div>
       )
     }
-    return <Login onLoginExitoso={handleLoginExitoso} onIrARegistro={() => setPage("registro")} />
+
+    if (page === "recuperar") {
+      return (
+        <div>
+          <SimpleNav onLogoClick={() => setPage("login")} />
+          <main style={s.main}>
+            <RecuperarPassword
+              onVolverLogin={() => setPage("login")}
+              onIrAReset={(token) => {
+                setTokenRecuperacion(token)
+                setPage("reset")
+              }}
+            />
+          </main>
+        </div>
+      )
+    }
+
+    if (page === "reset") {
+      return (
+        <div>
+          <SimpleNav onLogoClick={() => setPage("login")} />
+          <main style={s.main}>
+            <ResetPassword
+              token={tokenRecuperacion}
+              onVolverLogin={() => setPage("login")}
+              onPasswordCambiado={() => setPage("login")}
+            />
+          </main>
+        </div>
+      )
+    }
+
+    return (
+      <Login
+        onLoginExitoso={handleLoginExitoso}
+        onIrARegistro={() => setPage("registro")}
+        onIrARecuperar={() => setPage("recuperar")}
+      />
+    )
   }
 
   const navItems = [
@@ -534,7 +600,6 @@ const s = {
     cursor: "pointer",
     transition: "background 0.2s ease",
   },
-  // Admin login
   adminLoginContainer: {
     minHeight: "100vh",
     display: "flex",

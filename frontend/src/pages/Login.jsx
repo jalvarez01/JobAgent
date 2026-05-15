@@ -2,7 +2,7 @@ import { useState } from "react"
 import { login } from "../api/auth"
 import { obtenerPerfil } from "../api/perfil"
 
-export default function Login({ onLoginExitoso, onIrARegistro }) {
+export default function Login({ onLoginExitoso, onIrARegistro, onIrARecuperar }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -37,7 +37,6 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
   return (
     <div style={s.container}>
       <div style={s.card} className="animate-slide-up">
-        {/* Hero */}
         <div style={s.hero}>
           <h1 style={s.title}>Iniciar sesión</h1>
           <p style={s.subtitle}>Ingresa a tu cuenta de JobAgent</p>
@@ -64,7 +63,22 @@ export default function Login({ onLoginExitoso, onIrARegistro }) {
           </div>
 
           <div style={s.fieldWrap}>
-            <label htmlFor="password" style={s.label}>Contraseña</label>
+            <div style={s.labelRow}>
+              <label htmlFor="password" style={s.label}>Contraseña</label>
+              {onIrARecuperar && (
+                <span
+                  onClick={onIrARecuperar}
+                  style={s.forgotLink}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onIrARecuperar?.()}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.7)}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
+                >
+                  ¿Olvidaste tu contraseña?
+                </span>
+              )}
+            </div>
             <input
               id="password"
               type="password"
@@ -151,12 +165,25 @@ const s = {
     flexDirection: "column",
     gap: 8,
   },
+  labelRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingRight: 4,
+  },
   label: {
     fontSize: 13,
     fontWeight: 500,
     color: "var(--foreground)",
     letterSpacing: "0.01em",
     paddingLeft: 4,
+  },
+  forgotLink: {
+    fontSize: 12,
+    color: "var(--primary)",
+    cursor: "pointer",
+    fontWeight: 500,
+    transition: "opacity 0.2s",
   },
   btnPrimary: {
     width: "100%",
