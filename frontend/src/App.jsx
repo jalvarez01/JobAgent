@@ -14,6 +14,7 @@ import AdminPostulaciones from "./pages/AdminPostulaciones"
 import AdminDashboard from "./pages/AdminDashboard"
 import Favoritos from "./pages/Favoritos"
 import Entrevistas from "./pages/Entrevistas"
+import Brechas from "./pages/Brechas"
 import Ayuda from "./pages/Ayuda"
 import NotificacionesBell from "./pages/NotificacionesBell"
 import RecuperarPassword from "./pages/RecuperarPassword"
@@ -85,7 +86,11 @@ function MainApp() {
     const handleKey = (e) => {
       if (!perfilActual) return
       if (e.altKey) {
-        const map = { p: "ver", v: "recomendaciones", f: "favoritos", e: "entrevistas", t: "tablero", l: "pipeline", a: "ayuda" }
+        const map = {
+          p: "ver", v: "recomendaciones", f: "favoritos",
+          e: "entrevistas", t: "tablero", l: "pipeline",
+          b: "brechas", a: "ayuda",
+        }
         const target = map[e.key.toLowerCase()]
         if (target) {
           e.preventDefault()
@@ -182,6 +187,7 @@ function MainApp() {
     { key: "favoritos", label: "Favoritos", shortcut: "F" },
     { key: "entrevistas", label: "Entrevistas", shortcut: "E" },
     { key: "tablero", label: "Tablero", shortcut: "T" },
+    { key: "brechas", label: "Brechas", shortcut: "B" },
     { key: "pipeline", label: "Pipeline", shortcut: "L" },
     { key: "ayuda", label: "Ayuda", shortcut: "A" },
   ]
@@ -236,6 +242,7 @@ function MainApp() {
         {page === "entrevistas" && <Entrevistas perfil={perfilActual} onVolver={() => setPage("ver")} />}
         {page === "detalle" && <DetalleVacante vacante={vacanteSeleccionada} perfilId={perfilActual?.id} onVolver={() => setPage("recomendaciones")} />}
         {page === "tablero" && <Tablero perfil={perfilActual} onVolver={() => setPage("ver")} />}
+        {page === "brechas" && <Brechas perfil={perfilActual} onVolver={() => setPage("ver")} />}
         {page === "pipeline" && <PipelineDashboard perfil={perfilActual} onVerTablero={() => setPage("tablero")} onVolver={() => setPage("ver")} />}
         {page === "ayuda" && <Ayuda onVolver={() => setPage("ver")} />}
       </main>
@@ -250,8 +257,8 @@ function MainApp() {
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {[
                 ["Perfil", "Alt + P"], ["Vacantes", "Alt + V"], ["Favoritos", "Alt + F"],
-                ["Entrevistas", "Alt + E"], ["Tablero", "Alt + T"], ["Pipeline", "Alt + L"],
-                ["Ayuda", "Alt + A"], ["Ver atajos", "Alt + ?"],
+                ["Entrevistas", "Alt + E"], ["Tablero", "Alt + T"], ["Brechas", "Alt + B"],
+                ["Pipeline", "Alt + L"], ["Ayuda", "Alt + A"], ["Ver atajos", "Alt + ?"],
               ].map(([label, key]) => (
                 <div key={key} style={s.shortcutRow}>
                   <span style={{ fontSize: 15 }}>{label}</span>
