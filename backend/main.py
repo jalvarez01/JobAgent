@@ -8,7 +8,7 @@ from backend.infrastructure.persistence.models import password_reset_token  # no
 
 from backend.api import (
     cv, perfil, vacantes, postulaciones, trazabilidad, pipeline,
-    auth, favoritos, entrevistas, notificaciones, recuperacion,
+    auth, favoritos, entrevistas, notificaciones, recuperacion, dashboard,
 )
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(pipeline.router, prefix="/pipeline", tags=["Pipeline"])
 app.include_router(favoritos.router, prefix="/favoritos", tags=["Favoritos"])
 app.include_router(entrevistas.router, prefix="/entrevistas", tags=["Entrevistas"])
 app.include_router(notificaciones.router, prefix="/notificaciones", tags=["Notificaciones"])
+app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 
 @app.on_event("startup")

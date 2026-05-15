@@ -11,6 +11,7 @@ import PipelineDashboard from "./pages/PipelineDashboard"
 import AdminVacantes from "./pages/AdminVacantes"
 import AdminEntrevistas from "./pages/AdminEntrevistas"
 import AdminPostulaciones from "./pages/AdminPostulaciones"
+import AdminDashboard from "./pages/AdminDashboard"
 import Favoritos from "./pages/Favoritos"
 import Entrevistas from "./pages/Entrevistas"
 import Ayuda from "./pages/Ayuda"
@@ -24,7 +25,6 @@ const ADMIN_PASS = "admin"
 function App() {
   const path = window.location.pathname
 
-  // Ruta especial: enlace de reset directo desde el "email"
   if (path === "/reset-password") {
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
@@ -394,12 +394,13 @@ function AdminLogin({ onLogin }) {
 function AdminPanel({ onLogout }) {
   const path = window.location.pathname
   const inicial = path.includes("/entrevistas") ? "entrevistas"
-    : path.includes("/postulaciones") ? "postulaciones" : "vacantes"
+    : path.includes("/postulaciones") ? "postulaciones"
+    : path.includes("/vacantes") ? "vacantes" : "dashboard"
   const [adminPage, setAdminPage] = useState(inicial)
 
   const handleNav = (page) => {
     setAdminPage(page)
-    const newPath = page === "vacantes" ? "/admin" : `/admin/${page}`
+    const newPath = page === "dashboard" ? "/admin" : `/admin/${page}`
     window.history.pushState({}, "", newPath)
   }
 
@@ -412,6 +413,16 @@ function AdminPanel({ onLogout }) {
             <span style={s.adminBadge}>Admin</span>
           </div>
           <div style={s.navLinks}>
+            <span
+              onClick={() => handleNav("dashboard")}
+              style={{
+                ...s.navLink,
+                color: adminPage === "dashboard" ? "var(--foreground)" : "var(--muted-foreground)",
+                fontWeight: adminPage === "dashboard" ? 500 : 400,
+              }}
+            >
+              Dashboard
+            </span>
             <span
               onClick={() => handleNav("vacantes")}
               style={{
@@ -449,6 +460,7 @@ function AdminPanel({ onLogout }) {
         </div>
       </nav>
       <main style={s.main}>
+        {adminPage === "dashboard" && <AdminDashboard onVolver={onLogout} />}
         {adminPage === "vacantes" && <AdminVacantes onVolver={onLogout} />}
         {adminPage === "postulaciones" && <AdminPostulaciones onVolver={onLogout} />}
         {adminPage === "entrevistas" && <AdminEntrevistas onVolver={onLogout} />}
