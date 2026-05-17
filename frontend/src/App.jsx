@@ -26,6 +26,17 @@ const ADMIN_PASS = "admin"
 function App() {
   const path = window.location.pathname
 
+  // Título dinámico de la pestaña
+  useEffect(() => {
+    if (path.startsWith("/admin")) {
+      document.title = "JobAgent Admin"
+    } else if (path === "/reset-password") {
+      document.title = "Restablecer contraseña · JobAgent"
+    } else {
+      document.title = "JobAgent"
+    }
+  }, [path])
+
   if (path === "/reset-password") {
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
@@ -35,6 +46,8 @@ function App() {
   if (path.startsWith("/admin")) return <AdminApp />
   return <MainApp />
 }
+
+
 
 function ResetPasswordRoute({ token }) {
   const irAlInicio = () => { window.location.href = "/" }

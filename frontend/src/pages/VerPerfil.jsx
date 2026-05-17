@@ -1,3 +1,5 @@
+import BtnExportarCV from "./BtnExportarCV"
+
 export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaciones }) {
   if (!perfil) return null
 
@@ -28,14 +30,17 @@ export default function VerPerfil({ perfil, onEditar, onVolver, onVerRecomendaci
               <p style={s.cargoMuted}>{perfil.cargo_actual || "Sin cargo definido"}</p>
             </div>
           </div>
-          <button
-            onClick={onEditar}
-            style={s.btnSecondary}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            Editar perfil
-          </button>
+          <div style={s.headerActions}>
+            <BtnExportarCV perfilId={perfil.id} onEditar={onEditar} />
+            <button
+              onClick={onEditar}
+              style={s.btnSecondary}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              Editar perfil
+            </button>
+          </div>
         </div>
 
         {/* Completitud */}
@@ -184,6 +189,12 @@ const s = {
     marginBottom: 32,
     flexWrap: "wrap",
     gap: 16,
+  },
+  headerActions: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    alignItems: "center",
   },
   avatar: {
     width: 72,

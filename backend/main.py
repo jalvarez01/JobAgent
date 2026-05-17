@@ -9,7 +9,7 @@ from backend.infrastructure.persistence.models import skill_aprendizaje  # noqa:
 
 from backend.api import (
     cv, perfil, vacantes, postulaciones, trazabilidad, pipeline,
-    auth, favoritos, entrevistas, notificaciones, recuperacion, dashboard, brechas,
+    auth, favoritos, entrevistas, notificaciones, recuperacion, dashboard, brechas, cv_export,
 )
 
 app = FastAPI(
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(recuperacion.router, prefix="/auth", tags=["Recuperación"])
 app.include_router(cv.router, prefix="/cv", tags=["CV"])
+app.include_router(cv_export.router, prefix="/cv", tags=["CV Export"])
 app.include_router(perfil.router, prefix="/perfiles", tags=["Perfiles"])
 app.include_router(vacantes.router, prefix="/vacantes", tags=["Vacantes"])
 app.include_router(postulaciones.router, prefix="/postulaciones", tags=["Postulaciones"])
