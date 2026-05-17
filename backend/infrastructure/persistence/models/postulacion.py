@@ -30,5 +30,8 @@ class PostulacionModel(Base):
     # Score de match al momento de postular (snapshot)
     score_match: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
+    # Carta de presentación opcional escrita por el candidato (HU22)
+    carta_presentacion: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)

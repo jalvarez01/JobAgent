@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { crearPostulacion } from "../api/postulaciones"
 import { guardarFavorito, eliminarFavorito, esFavorito } from "../api/favoritos"
 
+const MAX_CARTA = 3000
+
 export default function DetalleVacante({ vacante, perfilId, onVolver }) {
   const [postulando, setPostulando] = useState(false)
   const [postulado, setPostulado] = useState(false)
@@ -10,6 +12,9 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
   const [favorito, setFavorito] = useState(false)
   const [guardandoFav, setGuardandoFav] = useState(false)
   const [mensajeFav, setMensajeFav] = useState("")
+
+  const [mostrarCarta, setMostrarCarta] = useState(false)
+  const [carta, setCarta] = useState("")
 
   useEffect(() => {
     if (perfilId && vacante?.id) {
@@ -25,12 +30,16 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
     if (!perfilId) return
     setPostulando(true); setError("")
     try {
-      await crearPostulacion({
+      const payload = {
         perfil_id: perfilId,
         vacante_id: String(vacante.id),
         tipo: "manual",
         score_match: vacante.score ? String(Math.round(vacante.score * 100)) : null,
-      })
+      }
+      if (carta.trim()) {
+        payload.carta_presentacion = carta.trim()
+      }
+      await crearPostulacion(payload)
       setPostulado(true)
     } catch (err) { setError(err.message) }
     finally { setPostulando(false) }
@@ -74,13 +83,17 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
     return "var(--muted-foreground)"
   }
 
+  const cartaTooLong = carta.length > MAX_CARTA
+
   return (
     <div style={s.container}>
-      {/* Breadcrumbs */}
       <div style={s.breadcrumbs}>
         <span
           onClick={onVolver}
           style={s.breadLink}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onVolver?.()}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.7)}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
         >
@@ -90,9 +103,7 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
         <span style={{ color: "var(--foreground)" }}>{vacante.titulo}</span>
       </div>
 
-      {/* Card principal */}
       <div style={s.card} className="animate-slide-up">
-        {/* Header */}
         <div style={s.header}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={s.title}>{vacante.titulo}</h1>
@@ -105,7 +116,6 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
                 onClick={handleToggleFavorito}
                 disabled={guardandoFav}
                 style={favorito ? s.btnFavActive : s.btnFav}
-                title={favorito ? "Quitar de favoritos" : "Guardar en favoritos"}
               >
                 {favorito ? "Guardada" : "Guardar"}
               </button>
@@ -122,14 +132,12 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
           </div>
         </div>
 
-        {/* Mensaje favorito */}
         {mensajeFav && (
           <div style={s.successFav} className="animate-fade-in">
             {mensajeFav}
           </div>
         )}
 
-        {/* Meta grid */}
         <div style={s.metaGrid}>
           <MetaItem label="Ubicación" value={vacante.ubicacion} />
           <MetaItem label="Modalidad" value={vacante.modalidad} />
@@ -137,7 +145,6 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
           <MetaItem label="Estado" value={vacante.estado} />
         </div>
 
-        {/* Descripción */}
         <div style={s.section}>
           <h3 style={s.sectionTitle}>Descripción</h3>
           <p style={s.descripcion}>
@@ -145,7 +152,6 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
           </p>
         </div>
 
-        {/* Requisitos */}
         <div style={s.section}>
           <h3 style={s.sectionTitle}>Requisitos</h3>
           <div style={s.tags}>
@@ -165,7 +171,6 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
           </div>
         </div>
 
-        {/* Skills faltantes */}
         {vacante.skills_faltantes?.length > 0 && (
           <div style={s.section}>
             <h3 style={s.sectionTitle}>Habilidades que te faltan</h3>
@@ -180,20 +185,57 @@ export default function DetalleVacante({ vacante, perfilId, onVolver }) {
           </div>
         )}
 
-        {/* Acciones */}
+        {/* Carta de presentación */}
+        {!postulado && perfilId && (
+          <div style={s.section}>
+            <div style={s.cartaToggleRow}>
+              <h3 style={s.sectionTitle}>Carta de presentación</h3>
+              <button
+                onClick={() => setMostrarCarta(!mostrarCarta)}
+                style={s.btnGhost}
+              >
+                {mostrarCarta ? "Ocultar" : "Agregar carta (opcional)"}
+              </button>
+            </div>
+
+            {mostrarCarta && (
+              <div className="animate-fade-in">
+                <p style={s.hint}>
+                  Una carta personalizada te ayuda a destacar tu interés. Es completamente opcional.
+                </p>
+                <textarea
+                  value={carta}
+                  onChange={(e) => setCarta(e.target.value)}
+                  rows={8}
+                  placeholder="Escribe aquí por qué te interesa esta vacante, qué experiencia relevante tienes, qué te motiva..."
+                  style={{ marginTop: 10 }}
+                />
+                <div style={s.cartaCounter}>
+                  <span style={{
+                    color: cartaTooLong ? "var(--destructive)" : "var(--muted-foreground)",
+                  }}>
+                    {carta.length} / {MAX_CARTA} caracteres
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {error && <div style={s.error}>{error}</div>}
 
         <div style={s.actions}>
           {postulado ? (
             <span style={s.btnDone}>
               <span style={s.checkMarkLarge}>✓</span> Postulación enviada
+              {carta.trim() && " con carta de presentación"}
             </span>
           ) : (
             <button
               onClick={handlePostular}
-              disabled={postulando || !perfilId}
-              style={{ ...s.btnPrimary, opacity: postulando ? 0.6 : 1 }}
-              onMouseEnter={(e) => !postulando && (e.currentTarget.style.background = "#0077ed")}
+              disabled={postulando || !perfilId || cartaTooLong}
+              style={{ ...s.btnPrimary, opacity: (postulando || cartaTooLong) ? 0.6 : 1 }}
+              onMouseEnter={(e) => !postulando && !cartaTooLong && (e.currentTarget.style.background = "#0077ed")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
             >
               {postulando ? "Postulando..." : "Postularme a esta vacante"}
@@ -286,9 +328,7 @@ const s = {
     color: "var(--muted-foreground)",
     fontWeight: 400,
   },
-  scoreBox: {
-    textAlign: "center",
-  },
+  scoreBox: { textAlign: "center" },
   scoreValue: {
     fontSize: 36,
     fontWeight: 600,
@@ -320,10 +360,7 @@ const s = {
     marginBottom: 6,
     fontWeight: 500,
   },
-  metaValue: {
-    fontSize: 14,
-    fontWeight: 400,
-  },
+  metaValue: { fontSize: 14, fontWeight: 400 },
   section: { marginBottom: 28 },
   sectionTitle: {
     fontSize: 19,
@@ -337,11 +374,7 @@ const s = {
     lineHeight: 1.65,
     color: "var(--foreground)",
   },
-  tags: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-  },
+  tags: { display: "flex", flexWrap: "wrap", gap: 8 },
   skillOk: {
     display: "inline-flex",
     alignItems: "center",
@@ -369,14 +402,8 @@ const s = {
     background: "var(--warning-bg)",
     borderRadius: "var(--radius-full)",
   },
-  checkMark: {
-    fontSize: 12,
-    fontWeight: 700,
-  },
-  checkMarkLarge: {
-    fontSize: 16,
-    fontWeight: 700,
-  },
+  checkMark: { fontSize: 12, fontWeight: 700 },
+  checkMarkLarge: { fontSize: 16, fontWeight: 700 },
   hint: {
     fontSize: 13,
     color: "var(--muted-foreground)",
@@ -384,6 +411,30 @@ const s = {
     fontStyle: "italic",
   },
   muted: { color: "var(--muted-foreground)", fontSize: 14 },
+  cartaToggleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 8,
+  },
+  btnGhost: {
+    padding: "8px 16px",
+    background: "transparent",
+    color: "var(--primary)",
+    border: "1px solid var(--primary)",
+    borderRadius: "var(--radius-full)",
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  cartaCounter: {
+    fontSize: 12,
+    textAlign: "right",
+    marginTop: 6,
+  },
   error: {
     color: "var(--destructive)",
     background: "var(--destructive-bg)",

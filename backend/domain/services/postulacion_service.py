@@ -24,6 +24,7 @@ class PostulacionService:
             tipo=data.tipo or "manual",
             notas=data.notas,
             score_match=data.score_match,
+            carta_presentacion=data.carta_presentacion,
         )
 
         vacante = self.vacante_repo.get_by_id(data.vacante_id)
@@ -47,7 +48,6 @@ class PostulacionService:
         return [self._enriquecer(p) for p in postulaciones]
 
     def listar_todas(self) -> list[PostulacionResponse]:
-        """Solo para uso del admin: lista todas las postulaciones del sistema."""
         postulaciones = self.repo.get_all()
         return [self._enriquecer_con_perfil(p) for p in postulaciones]
 
@@ -98,11 +98,9 @@ class PostulacionService:
         return resp
 
     def _enriquecer_con_perfil(self, postulacion) -> PostulacionResponse:
-        """Igual a _enriquecer pero también añade el nombre y email del candidato."""
         resp = self._enriquecer(postulacion)
         perfil = self.perfil_repo.get_by_id(postulacion.perfil_id)
         if perfil:
-            # Asumiendo que el response schema tiene estos campos opcionales
             setattr(resp, "perfil_nombre", perfil.nombre_completo)
             setattr(resp, "perfil_email", perfil.email)
         return resp

@@ -23,6 +23,7 @@ export default function AdminPostulaciones({ onVolver }) {
   const [error, setError] = useState("")
   const [mensaje, setMensaje] = useState("")
   const [busqueda, setBusqueda] = useState("")
+  const [cartaActiva, setCartaActiva] = useState(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -121,6 +122,7 @@ export default function AdminPostulaciones({ onVolver }) {
                       postulacion={p}
                       transiciones={TRANSICIONES[p.estado] || []}
                       onCambiarEstado={handleCambiarEstado}
+                      onVerCarta={() => setCartaActiva(p)}
                       fmtFecha={fmtFecha}
                     />
                   ))}
@@ -133,16 +135,43 @@ export default function AdminPostulaciones({ onVolver }) {
           })}
         </div>
       )}
+
+      {/* Modal de carta */}
+      {cartaActiva && (
+        <div style={s.modalOverlay} onClick={() => setCartaActiva(null)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()} className="animate-fade-in">
+            <div style={s.modalHeader}>
+              <div>
+                <h2 style={s.modalTitle}>Carta de presentación</h2>
+                <p style={s.modalSubtitle}>
+                  De <strong>{cartaActiva.perfil_nombre || "candidato"}</strong> para{" "}
+                  <strong>{cartaActiva.vacante_titulo}</strong> en <strong>{cartaActiva.vacante_empresa}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setCartaActiva(null)}
+                style={s.closeBtn}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+            </div>
+            <div style={s.cartaContent}>
+              {cartaActiva.carta_presentacion}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function PostulacionCard({ postulacion, transiciones, onCambiarEstado, fmtFecha }) {
+function PostulacionCard({ postulacion, transiciones, onCambiarEstado, onVerCarta, fmtFecha }) {
   const [expandido, setExpandido] = useState(false)
+  const tieneCarta = !!postulacion.carta_presentacion
 
   return (
     <div style={s.card}>
-      {/* Candidato */}
       <div style={s.candidateRow}>
         <div style={s.candidateAvatar}>
           {(postulacion.perfil_nombre || "?").charAt(0)}
@@ -153,7 +182,6 @@ function PostulacionCard({ postulacion, transiciones, onCambiarEstado, fmtFecha 
         </div>
       </div>
 
-      {/* Vacante */}
       <div style={s.vacanteBox}>
         <h4 style={s.cardTitle}>{postulacion.vacante_titulo || "Vacante"}</h4>
         <p style={s.cardEmpresa}>{postulacion.vacante_empresa}</p>
@@ -164,9 +192,23 @@ function PostulacionCard({ postulacion, transiciones, onCambiarEstado, fmtFecha 
         {postulacion.score_match && (
           <span style={s.cardScore}>{postulacion.score_match}%</span>
         )}
+        {tieneCarta && (
+          <span style={s.cardCarta}>Con carta</span>
+        )}
       </div>
 
       <div style={s.cardFecha}>{fmtFecha(postulacion.created_at)}</div>
+
+      {tieneCarta && (
+        <button
+          onClick={onVerCarta}
+          style={s.btnCarta}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          Ver carta de presentación
+        </button>
+      )}
 
       {transiciones.length > 0 && (
         <div style={s.transiciones}>
@@ -233,10 +275,7 @@ const s = {
     marginBottom: 8,
     color: "var(--foreground)",
   },
-  subtitle: {
-    fontSize: 15,
-    color: "var(--muted-foreground)",
-  },
+  subtitle: { fontSize: 15, color: "var(--muted-foreground)" },
   muted: { color: "var(--muted-foreground)", fontSize: 15 },
   error: {
     color: "var(--destructive)",
@@ -256,11 +295,7 @@ const s = {
     marginBottom: 16,
     fontSize: 14,
   },
-  searchRow: {
-    display: "flex",
-    gap: 10,
-    marginBottom: 20,
-  },
+  searchRow: { display: "flex", gap: 10, marginBottom: 20 },
   loading: { display: "flex", justifyContent: "center", padding: 80 },
   spinner: {
     width: 28, height: 28,
@@ -303,10 +338,7 @@ const s = {
     marginBottom: 14,
     padding: "0 4px",
   },
-  columnDot: {
-    width: 8, height: 8,
-    borderRadius: "50%",
-  },
+  columnDot: { width: 8, height: 8, borderRadius: "50%" },
   columnTitle: {
     fontSize: 13,
     fontWeight: 600,
@@ -321,11 +353,7 @@ const s = {
     padding: "2px 8px",
     borderRadius: "var(--radius-full)",
   },
-  cards: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
+  cards: { display: "flex", flexDirection: "column", gap: 8 },
   emptyCol: {
     fontSize: 12,
     color: "var(--muted-foreground)",
@@ -377,9 +405,7 @@ const s = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
-  vacanteBox: {
-    marginBottom: 8,
-  },
+  vacanteBox: { marginBottom: 8 },
   cardTitle: {
     fontSize: 13,
     fontWeight: 600,
@@ -388,10 +414,7 @@ const s = {
     letterSpacing: "-0.005em",
     lineHeight: 1.3,
   },
-  cardEmpresa: {
-    fontSize: 12,
-    color: "var(--muted-foreground)",
-  },
+  cardEmpresa: { fontSize: 12, color: "var(--muted-foreground)" },
   cardMeta: {
     display: "flex",
     gap: 6,
@@ -414,10 +437,31 @@ const s = {
     background: "var(--accent)",
     borderRadius: "var(--radius-full)",
   },
+  cardCarta: {
+    fontSize: 11,
+    fontWeight: 500,
+    color: "var(--success)",
+    padding: "2px 8px",
+    background: "var(--success-bg)",
+    borderRadius: "var(--radius-full)",
+  },
   cardFecha: {
     fontSize: 11,
     color: "var(--muted-foreground)",
     marginBottom: 10,
+  },
+  btnCarta: {
+    width: "100%",
+    padding: "7px 12px",
+    background: "transparent",
+    color: "var(--primary)",
+    border: "1px solid var(--primary)",
+    borderRadius: "var(--radius-sm)",
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: "pointer",
+    marginBottom: 8,
+    transition: "background 0.2s ease",
   },
   transiciones: {
     marginTop: 8,
@@ -465,5 +509,69 @@ const s = {
     fontWeight: 500,
     cursor: "pointer",
     transition: "background 0.2s ease",
+  },
+  // Modal
+  modalOverlay: {
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(0, 0, 0, 0.4)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 100,
+    padding: 20,
+  },
+  modal: {
+    background: "var(--card-solid)",
+    padding: 32,
+    maxWidth: 640,
+    width: "100%",
+    maxHeight: "80vh",
+    overflow: "auto",
+    borderRadius: "var(--radius-lg)",
+    boxShadow: "var(--shadow-lg)",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 16,
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 600,
+    letterSpacing: "-0.02em",
+    marginBottom: 6,
+    color: "var(--foreground)",
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "var(--muted-foreground)",
+    lineHeight: 1.5,
+  },
+  closeBtn: {
+    width: 32, height: 32,
+    borderRadius: "50%",
+    background: "rgba(0,0,0,0.04)",
+    border: "none",
+    fontSize: 18,
+    color: "var(--muted-foreground)",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  cartaContent: {
+    fontSize: 15,
+    lineHeight: 1.7,
+    color: "var(--foreground)",
+    whiteSpace: "pre-wrap",
+    padding: 20,
+    background: "rgba(0,0,0,0.025)",
+    borderRadius: "var(--radius-md)",
   },
 }

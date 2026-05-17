@@ -12,8 +12,8 @@ class PostulacionRepository:
         self.db = db
 
     def create(self, perfil_id: str, vacante_id: str, tipo: str = "manual",
-               notas: str = None, score_match: str = None) -> PostulacionModel:
-        # Verificar si ya existe una postulación activa
+               notas: str = None, score_match: str = None,
+               carta_presentacion: str = None) -> PostulacionModel:
         existente = (
             self.db.query(PostulacionModel)
             .filter(
@@ -32,17 +32,20 @@ class PostulacionRepository:
             tipo=tipo,
             notas=notas,
             score_match=score_match,
+            carta_presentacion=carta_presentacion,
         )
         self.db.add(postulacion)
 
-        # Registrar traza
         traza = TrazaModel(
             perfil_id=perfil_id,
             postulacion_id=postulacion.id,
             tipo="postulacion_creada",
             descripcion=f"Postulación creada ({tipo}) a vacante {vacante_id}",
             origen="sistema" if tipo == "auto" else "usuario",
-            extra_data=json.dumps({"score_match": score_match}),
+            extra_data=json.dumps({
+                "score_match": score_match,
+                "tiene_carta": bool(carta_presentacion),
+            }),
         )
         self.db.add(traza)
 
@@ -62,7 +65,6 @@ class PostulacionRepository:
         )
 
     def get_all(self) -> list[PostulacionModel]:
-        """Lista todas las postulaciones del sistema. Solo para uso del admin."""
         return (
             self.db.query(PostulacionModel)
             .order_by(PostulacionModel.updated_at.desc())

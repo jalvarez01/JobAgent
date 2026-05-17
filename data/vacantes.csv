@@ -1,0 +1,124 @@
+id,titulo,empresa,ubicacion,modalidad,salario_min,salario_max,requisitos
+1,Desarrollador Backend Senior,Mercado Libre,Medellín,remoto,8000000,14000000,python;django;postgresql;docker;aws
+2,Desarrollador Frontend React,Rappi,Bogotá,hibrido,6500000,10500000,react;typescript;tailwind;next.js;testing
+3,Full Stack Developer,Habi,Bogotá,remoto,7000000,12000000,node.js;react;mongodb;graphql;aws
+4,Desarrollador Mobile iOS,Bancolombia,Medellín,hibrido,7500000,13000000,swift;ios;xcode;rest;ci/cd
+5,Desarrollador Mobile Android,Nequi,Medellín,remoto,7000000,12000000,kotlin;android;room;coroutines;jetpack
+6,DevOps Engineer,Globant,Bogotá,remoto,9000000,15000000,kubernetes;terraform;aws;ci/cd;monitoring
+7,Site Reliability Engineer,Tul,Bogotá,remoto,9500000,16000000,kubernetes;prometheus;grafana;python;aws
+8,QA Automation Engineer,Truora,Medellín,remoto,5500000,9000000,cypress;selenium;javascript;jest;postman
+9,Ingeniero de Datos,Davivienda,Bogotá,hibrido,8000000,13000000,python;sql;spark;airflow;snowflake
+10,Data Scientist,Bavaria,Bogotá,hibrido,8500000,14000000,python;machine learning;pandas;tensorflow;sql
+11,Machine Learning Engineer,Sura,Medellín,remoto,9500000,16000000,python;mlops;pytorch;kubernetes;mlflow
+12,Analista de Datos Junior,Bancolombia,Medellín,hibrido,3000000,5000000,sql;excel;power bi;python;tableau
+13,Cloud Architect AWS,Globant,Bogotá,remoto,12000000,20000000,aws;terraform;arquitectura;kubernetes;networking
+14,Cybersecurity Analyst,BBVA Colombia,Bogotá,hibrido,7000000,12000000,siem;pentesting;ciberseguridad;owasp;forensics
+15,UX/UI Designer Senior,Rappi,Bogotá,remoto,6000000,10000000,figma;design systems;prototyping;research;ux writing
+16,Product Designer,Habi,Bogotá,remoto,6500000,11000000,figma;research;prototyping;design thinking;a/b testing
+v7,Tech Lead Backend,Mercado Libre,Medellín,remoto,13000000,20000000,java;spring;microservicios;kafka;liderazgo
+18,Médico General,Sanitas,Bogotá,presencial,4500000,6500000,atención primaria;urgencias;diagnóstico;historia clínica
+19,Médico General,Compensar,Bogotá,presencial,4200000,6000000,consulta externa;medicina preventiva;diagnóstico
+20,Médico Pediatra,Clínica del Country,Bogotá,presencial,9000000,16000000,pediatría;urgencias pediátricas;vacunación;crecimiento
+21,Médico Cardiólogo,Fundación Santa Fe,Bogotá,presencial,12000000,22000000,cardiología;ecocardiografía;arritmias;hemodinámica
+22,Médico Anestesiólogo,Clínica Marly,Bogotá,presencial,14000000,25000000,anestesia general;regional;cuidados intensivos;cirugía
+23,Médico Ginecólogo,Clínica Las Vegas,Medellín,presencial,10000000,18000000,ginecología;obstetricia;ecografía;cirugía
+24,Enfermera Profesional,Clínica Las Vegas,Medellín,presencial,2800000,4200000,atención clínica;medicamentos;curaciones;urgencias
+25,Enfermera Jefe,Sanitas,Cali,presencial,4000000,6000000,liderazgo;gestión clínica;protocolos;equipo de salud
+26,Auxiliar de Enfermería,Colsubsidio,Bogotá,presencial,1800000,2500000,signos vitales;medicamentos;cuidado paciente;higiene
+27,Fisioterapeuta,Clínica del Country,Bogotá,presencial,3500000,5500000,rehabilitación;terapia manual;ejercicio terapéutico
+28,Psicólogo Clínico,Compensar,Bogotá,hibrido,3800000,6000000,terapia cognitivo conductual;evaluación;intervención;dsm-5
+29,Nutricionista,Sura,Medellín,presencial,3000000,4800000,nutrición clínica;planes alimentarios;diabetes;obesidad
+30,Odontólogo General,Colsubsidio,Bogotá,presencial,4500000,7500000,odontología general;endodoncia;periodoncia;radiología
+31,Bacteriólogo,Fundación Santa Fe,Bogotá,presencial,3800000,5800000,microbiología;hematología;química clínica;laboratorio
+32,Químico Farmacéutico,Tecnoquímicas,Cali,presencial,4500000,7500000,farmacología;regulatorio;invima;buenas prácticas
+33,Profesor de Primaria,Colegio San Carlos,Bogotá,presencial,2500000,3800000,pedagogía;didáctica;evaluación;manejo de grupo
+34,Profesor de Matemáticas Secundaria,Colegio Los Nogales,Bogotá,presencial,3200000,4800000,matemáticas;pedagogía;geometría;cálculo;álgebra
+35,Profesor de Inglés,British Council,Bogotá,hibrido,3500000,5500000,tesol;cefr;gramática;conversation;ielts
+36,Profesor Universitario Ingeniería,Universidad EAFIT,Medellín,presencial,6000000,11000000,investigación;docencia;publicaciones;doctorado
+37,Profesor Universitario Economía,Universidad de los Andes,Bogotá,presencial,7000000,14000000,economía;econometría;investigación;publicaciones
+38,Profesor Universitario Derecho,Universidad Javeriana,Bogotá,presencial,6500000,12000000,derecho;investigación;publicaciones;litigación
+39,Tutor de Matemáticas Online,Khan Academy,Cualquier ciudad,remoto,2500000,4000000,matemáticas;tutoría online;pedagogía;paciencia
+40,Coordinador Académico,Colegio Los Nogales,Bogotá,presencial,5500000,8500000,gestión académica;currículo;liderazgo;evaluación
+41,Profesor de Música,Conservatorio,Bogotá,presencial,2800000,4500000,teoría musical;piano;solfeo;pedagogía musical
+42,Profesor de Educación Física,Colegio San Carlos,Bogotá,presencial,2500000,3800000,deportes;entrenamiento;pedagogía;salud
+43,Economista Senior,ANIF,Bogotá,hibrido,7500000,13000000,macroeconomía;econometría;stata;investigación;análisis
+44,Economista Junior,DANE,Bogotá,presencial,3500000,5500000,estadística;spss;excel;investigación;reportes
+45,Analista Financiero,Bancolombia,Medellín,hibrido,4500000,7500000,valoración;flujo de caja;excel;modelos financieros;npv
+46,Asesor de Inversiones,Davivienda,Bogotá,presencial,5000000,9000000,renta variable;renta fija;portafolio;amv;clientes
+47,Contador Público,Deloitte,Bogotá,hibrido,4500000,7500000,niif;sap;impuestos;auditoría;nómina
+48,Auditor Senior,PwC Colombia,Bogotá,hibrido,6500000,11000000,auditoría;niif;sox;riesgos;controles internos
+49,Director Financiero,Alpina,Sopó,presencial,18000000,30000000,cfo;estrategia financiera;niif;tesorería;liderazgo
+50,Tesorero Corporativo,Grupo Éxito,Medellín,presencial,9000000,15000000,tesorería;cash management;coberturas;fx;bancos
+51,Analista de Riesgos,Banco de Bogotá,Bogotá,hibrido,5500000,9500000,var;sarms;basilea;estadística;python
+52,Banca de Inversión,Itaú Colombia,Bogotá,presencial,8000000,16000000,m&a;valoración;modelaje;dcf;capital markets
+53,Abogado Corporativo,Brigard Urrutia,Bogotá,presencial,7000000,13000000,derecho corporativo;m&a;contratos;due diligence
+54,Abogado Laboral,Posse Herrera Ruiz,Bogotá,presencial,6500000,11000000,derecho laboral;código sustantivo;litigios;seguridad social
+55,Abogado Tributario,EY Colombia,Bogotá,hibrido,7500000,13000000,tributario;dian;niif;planeación tributaria;litigios
+56,Abogado Junior,Gómez-Pinzón,Bogotá,presencial,3500000,5500000,investigación jurídica;contratos;litigios;civil
+57,Paralegal,Brigard Urrutia,Bogotá,presencial,2800000,4500000,investigación;documentación;contratos;asistencia legal
+58,Notario Auxiliar,Notaría 19,Bogotá,presencial,3000000,5000000,derecho notarial;escrituras;poderes;sucesiones
+59,Arquitecto Senior,Bermúdez Arquitectos,Bogotá,hibrido,6500000,11000000,revit;autocad;diseño;construcción;sketchup
+60,Arquitecto Junior,Estudio Plan B,Medellín,presencial,3000000,4800000,autocad;revit;sketchup;render;archicad
+61,Diseñador de Interiores,Tugó,Bogotá,hibrido,3500000,6000000,diseño interior;3ds max;photoshop;materiales;decoración
+62,Ingeniero Civil Residente,Argos,Cartagena,presencial,5500000,9000000,construcción;estructuras;hormigón;supervisión;obra
+63,Ingeniero Estructural,AIA Colombia,Bogotá,hibrido,7000000,12000000,sap2000;etabs;hormigón;sismorresistente;ras
+64,Topógrafo,Cemex,Cali,presencial,2800000,4500000,estación total;gps;autocad civil 3d;levantamientos
+65,Director de Obra,Constructora Bolívar,Bogotá,presencial,9000000,15000000,gestión de obra;cronogramas;presupuestos;liderazgo
+66,Project Manager Construcción,Pedro Gómez y Cía,Bogotá,presencial,8500000,14000000,pmbok;cronogramas;presupuestos;liderazgo;ms project
+67,Ingeniero Industrial,Bavaria,Bogotá,presencial,4500000,7500000,lean;six sigma;procesos;sap;kpis
+68,Ingeniero Mecánico,Ecopetrol,Barrancabermeja,presencial,6000000,10000000,mantenimiento;solidworks;termodinámica;vibraciones
+69,Ingeniero Eléctrico,EPM,Medellín,presencial,5500000,9500000,subestaciones;protecciones;normativa retie;potencia
+70,Ingeniero Químico,Tecnoquímicas,Cali,presencial,5500000,9000000,procesos químicos;control de calidad;buenas prácticas;hysys
+71,Ingeniero Ambiental,EPM,Medellín,presencial,4500000,7500000,iso 14001;estudios ambientales;sostenibilidad;hse
+72,Ingeniero de Procesos,Ecopetrol,Cartagena,presencial,7000000,12000000,refinería;hysys;optimización;hazop;p&id
+73,Ingeniero de Calidad,Renault Sofasa,Envigado,presencial,4500000,7500000,iso 9001;auditorías;control estadístico;tps
+74,Ingeniero de Producción,Nutresa,Medellín,presencial,4800000,8000000,manufactura;lean;sap pp;kpis;tpm
+75,Marketing Manager,Quala,Bogotá,hibrido,7500000,13000000,marketing digital;branding;trade marketing;estrategia
+76,Community Manager,Postobón,Bogotá,hibrido,3500000,5500000,social media;copywriting;canva;hootsuite;analytics
+77,SEO Specialist,Rappi,Bogotá,remoto,4500000,7500000,seo;sem;google analytics;ahrefs;keyword research
+78,Performance Marketing,Mercado Libre,Medellín,remoto,5500000,9500000,google ads;facebook ads;ga4;roi;optimización
+79,Brand Manager,Postobón,Medellín,hibrido,6000000,10000000,branding;investigación de mercado;trade;medios;activaciones
+80,Copywriter,Sancho BBDO,Bogotá,hibrido,4000000,6500000,copy;storytelling;publicidad;briefs;conceptualización
+81,Ejecutivo de Ventas B2B,SAP Colombia,Bogotá,hibrido,4500000,8000000,ventas consultivas;crm;negociación;prospección
+82,Gerente Comercial,Bavaria,Cali,presencial,10000000,18000000,liderazgo comercial;estrategia;clientes;kpis;forecast
+83,Account Manager,Globant,Bogotá,remoto,6000000,10000000,gestión de cuentas;crm;negociación;cliente;reportes
+84,Asesor Comercial,Movistar,Cali,presencial,1800000,3500000,ventas;atención al cliente;comisiones;crm
+85,Diseñador Gráfico,Sancho BBDO,Bogotá,hibrido,3500000,5500000,illustrator;photoshop;indesign;branding;tipografía
+86,Diseñador Industrial,Corona,Sopó,presencial,4000000,6500000,solidworks;rhino;keyshot;prototipado;cerámica
+87,Editor de Video,Caracol Televisión,Bogotá,presencial,3500000,6000000,premiere;after effects;davinci resolve;color;edición
+88,Fotógrafo Comercial,Estudio Lumen,Bogotá,presencial,3000000,5500000,fotografía de producto;iluminación;photoshop;lightroom
+89,Animador 3D,Caracol Televisión,Bogotá,hibrido,4500000,7500000,maya;blender;substance;rigging;render
+90,Director de Arte,MullenLowe SSP3,Bogotá,presencial,8000000,13000000,dirección creativa;branding;campañas;equipos;estrategia
+91,Motion Designer,Endemol Shine,Bogotá,hibrido,4500000,7500000,after effects;cinema 4d;animación;ilustración
+92,Chef Ejecutivo,Hotel Tequendama,Bogotá,presencial,5500000,9500000,cocina internacional;costos;equipos;menú engineering
+93,Sous Chef,Andrés Carne de Res,Chía,presencial,3500000,5500000,cocina caliente;parrilla;equipos;control de costos
+94,Barista,Juan Valdez,Medellín,presencial,1500000,2200000,café especialidad;latte art;atención;cafetera espresso
+95,Bartender,Hotel Marriott,Bogotá,presencial,1800000,3000000,mixología;cócteles;servicio;atención cliente
+96,Recepcionista Hotel,Hotel Estelar,Cartagena,presencial,1600000,2400000,atención cliente;inglés;sistemas hoteleros;check-in
+97,Camarera de Hotel,Hotel Hilton,Cartagena,presencial,1450000,1800000,limpieza;orden;protocolos hoteleros;atención
+98,Periodista,El Tiempo,Bogotá,hibrido,3500000,5500000,redacción;investigación;fuentes;reportería;sem
+99,Periodista Digital,Semana,Bogotá,hibrido,3800000,6000000,seo;analytics;redacción;redes sociales;multimedia
+100,Comunicador Social,Ecopetrol,Bogotá,hibrido,4500000,7000000,comunicación interna;crisis;medios;rrpp;estrategia
+101,Traductor Inglés-Español,Independiente,Cualquier ciudad,remoto,3000000,5500000,trados;memoq;localization;edición;técnico
+102,Locutor,Caracol Radio,Bogotá,presencial,3000000,5500000,locución;edición de audio;guion;impostación
+103,Trabajador Social,Compensar,Bogotá,presencial,3000000,4800000,intervención social;familia;comunidades;diagnóstico
+104,Sociólogo,DANE,Bogotá,hibrido,3800000,6000000,investigación social;spss;cualitativa;cuantitativa
+105,Veterinario,Clínica Veterinaria Animal Care,Bogotá,presencial,3500000,6000000,medicina animal;cirugía;diagnóstico;ecografía
+106,Biólogo Marino,Invemar,Santa Marta,presencial,3500000,6000000,ecología marina;buceo científico;estadística;sig
+107,Geólogo,Ecopetrol,Bucaramanga,presencial,6500000,11000000,geología;arcgis;exploración;petróleo;cartografía
+108,Investigador Científico,Universidad Nacional,Bogotá,presencial,6500000,12000000,investigación;publicaciones;estadística;laboratorio;doctorado
+109,Agrónomo,Augura,Apartadó,presencial,4000000,6500000,fitopatología;suelos;plagas;fertilización;sostenibilidad
+110,HR Business Partner,Globant,Bogotá,hibrido,7000000,12000000,people management;cultura;clima;desarrollo;okrs
+111,Reclutador IT,Mercado Libre,Medellín,remoto,4500000,7500000,linkedin recruiter;reclutamiento tech;ats;entrevistas
+112,Director de Recursos Humanos,Grupo Éxito,Envigado,presencial,14000000,24000000,liderazgo;cultura;compensación;sst;legal laboral
+113,Coordinador de Bienestar,Bancolombia,Medellín,presencial,4500000,7000000,bienestar laboral;clima;eventos;sst;cultura
+114,Gerente de Operaciones,Rappi,Bogotá,presencial,11000000,18000000,operaciones;logística;kpis;equipos;procesos
+115,Analista de Procesos,Sura,Medellín,hibrido,4500000,7500000,bpmn;lean;mejora continua;kpis;visio
+116,Coordinador Logístico,Servientrega,Bogotá,presencial,3500000,5500000,supply chain;wms;tms;rutas;inventarios
+117,Supply Chain Analyst,Nutresa,Medellín,hibrido,5000000,8500000,sap;forecasting;s&op;excel avanzado;power bi
+118,Comprador Senior,Falabella,Bogotá,presencial,5500000,9000000,compras;negociación;proveedores;sap;categorías
+119,Practicante Marketing Digital,Rappi,Bogotá,hibrido,1500000,2000000,redes sociales;canva;analytics;excel;copy
+120,Practicante Ingeniería de Sistemas,Bancolombia,Medellín,presencial,1500000,2200000,python;sql;git;aprendizaje rápido;trabajo en equipo
+121,Practicante Contaduría,PwC Colombia,Bogotá,presencial,1500000,2000000,excel;niif;contabilidad básica;sap
+122,Aprendiz Sena,Bavaria,Bogotá,presencial,1300000,1500000,actitud;aprendizaje;office;trabajo en equipo
+123,Trainee Comercial,Banco de Bogotá,Cali,presencial,2200000,3200000,ventas;atención cliente;crm;office

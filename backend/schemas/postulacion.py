@@ -12,6 +12,7 @@ class PostulacionCreate(BaseModel):
     tipo: str = "manual"  # manual | auto | asistida
     notas: Optional[str] = None
     score_match: Optional[str] = None
+    carta_presentacion: Optional[str] = Field(default=None, max_length=3000)
 
 
 class PostulacionUpdateEstado(BaseModel):
@@ -27,6 +28,7 @@ class PostulacionResponse(BaseModel):
     tipo: str
     notas: Optional[str] = None
     score_match: Optional[str] = None
+    carta_presentacion: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
