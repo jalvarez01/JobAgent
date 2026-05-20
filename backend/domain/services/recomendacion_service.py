@@ -1,5 +1,4 @@
 from typing import Optional
-
 from sqlalchemy.orm import Session
 
 from backend.infrastructure.persistence.repositories.perfil_repo import PerfilRepository
@@ -27,6 +26,7 @@ class RecomendacionService:
         limit: int = 10,
         modalidad: Optional[str] = None,
         ubicacion: Optional[str] = None,
+        area: Optional[str] = None,
     ) -> list[VacanteConScore]:
         perfil = self.perfil_repo.get_by_id(perfil_id)
         if not perfil:
@@ -36,14 +36,14 @@ class RecomendacionService:
         if not perfil_skills:
             return []
 
-        vacantes = self.vacante_repo.get_all(estado="activa")
-        scored = []
+        # Filtramos por área directamente en el repo (más eficiente)
+        vacantes = self.vacante_repo.get_all(estado="activa", area=area)
 
+        scored = []
         for v in vacantes:
             # Filtro por modalidad si se especifica
             if modalidad and v.modalidad and v.modalidad.lower() != modalidad.lower():
                 continue
-
             # Filtro por ubicación si se especifica
             if ubicacion and v.ubicacion and ubicacion.lower() not in v.ubicacion.lower():
                 continue
@@ -81,6 +81,7 @@ class RecomendacionService:
                     requisitos=v.requisitos,
                     url=v.url,
                     estado=v.estado,
+                    area=v.area,
                     created_at=v.created_at,
                     score=round(score, 3),
                     skills_match=sorted(match),

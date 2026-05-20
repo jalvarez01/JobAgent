@@ -20,9 +20,7 @@ def crear_perfil(data: PerfilCreate, svc: PerfilService = Depends(_service)):
         perfil = svc.crear_perfil(data)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
-
     token = crear_token(perfil.id, perfil.email)
-
     return {
         **perfil.model_dump(),
         "access_token": token,
@@ -36,6 +34,20 @@ def listar_perfiles(
     current_user=Depends(get_current_user),
 ):
     """Endpoint protegido: solo usuarios autenticados pueden listar."""
+    return svc.listar_perfiles()
+
+
+# IMPORTANTE: rutas con prefijo fijo van ANTES de /{perfil_id}
+
+@router.get("/admin/listar", response_model=list[PerfilResponse])
+def listar_perfiles_admin(svc: PerfilService = Depends(_service)):
+    """Endpoint del panel admin local. Sin autenticación JWT.
+
+    Devuelve la lista de perfiles sin datos sensibles (PerfilResponse no incluye
+    password_hash ni salt gracias al schema). Pensado para el panel de RH que se
+    autentica en frontend con flag local; en producción debería usar un mecanismo
+    de auth real para admin.
+    """
     return svc.listar_perfiles()
 
 

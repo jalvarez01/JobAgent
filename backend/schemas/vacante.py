@@ -17,6 +17,7 @@ class VacanteCreate(BaseModel):
     requisitos: Optional[str] = None  # skills separados por ;
     url: Optional[str] = Field(None, max_length=500)
     estado: str = "activa"
+    area: Optional[str] = Field(None, max_length=50)
 
 
 class VacanteUpdate(BaseModel):
@@ -30,6 +31,7 @@ class VacanteUpdate(BaseModel):
     requisitos: Optional[str] = None
     url: Optional[str] = Field(None, max_length=500)
     estado: Optional[str] = None
+    area: Optional[str] = Field(None, max_length=50)
 
 
 class VacanteResponse(BaseModel):
@@ -44,6 +46,7 @@ class VacanteResponse(BaseModel):
     requisitos: Optional[str] = None
     url: Optional[str] = None
     estado: str = "activa"
+    area: Optional[str] = None
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -51,6 +54,7 @@ class VacanteResponse(BaseModel):
 
 class VacanteConScore(VacanteResponse):
     """Vacante con score de matching para recomendaciones."""
+
     score: float = 0.0
     skills_match: list[str] = []
     skills_faltantes: list[str] = []

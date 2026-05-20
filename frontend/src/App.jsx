@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { obtenerPerfil } from "./api/perfil"
+import Landing from "./pages/Landing"
 import Login from "./pages/Login"
 import CrearPerfil from "./pages/CrearPerfil"
 import VerPerfil from "./pages/VerPerfil"
@@ -10,6 +11,7 @@ import Tablero from "./pages/Tablero"
 import PipelineDashboard from "./pages/PipelineDashboard"
 import AdminVacantes from "./pages/AdminVacantes"
 import AdminEntrevistas from "./pages/AdminEntrevistas"
+import AdminEntrevistasIA from "./pages/AdminEntrevistasIA"
 import AdminPostulaciones from "./pages/AdminPostulaciones"
 import AdminDashboard from "./pages/AdminDashboard"
 import Favoritos from "./pages/Favoritos"
@@ -26,7 +28,6 @@ const ADMIN_PASS = "admin"
 function App() {
   const path = window.location.pathname
 
-  // Título dinámico de la pestaña
   useEffect(() => {
     if (path.startsWith("/admin")) {
       document.title = "JobAgent Admin"
@@ -47,8 +48,6 @@ function App() {
   return <MainApp />
 }
 
-
-
 function ResetPasswordRoute({ token }) {
   const irAlInicio = () => { window.location.href = "/" }
   return (
@@ -66,7 +65,8 @@ function ResetPasswordRoute({ token }) {
 }
 
 function MainApp() {
-  const [page, setPage] = useState("login")
+  // Página inicial: landing si no hay sesión guardada
+  const [page, setPage] = useState("landing")
   const [perfilActual, setPerfilActual] = useState(null)
   const [vacanteSeleccionada, setVacanteSeleccionada] = useState(null)
   const [cargandoSesion, setCargandoSesion] = useState(true)
@@ -126,7 +126,7 @@ function MainApp() {
   const handleLogout = () => {
     localStorage.removeItem("jobagent_session")
     setPerfilActual(null)
-    setPage("login")
+    setPage("landing")
   }
 
   if (cargandoSesion) {
@@ -137,11 +137,31 @@ function MainApp() {
     )
   }
 
+  // Sin sesión
   if (!perfilActual) {
+    // LANDING (página inicial)
+    if (page === "landing") {
+      return (
+        <div>
+          <LandingNav
+            onLogoClick={() => setPage("landing")}
+            onIrALogin={() => setPage("login")}
+            onIrARegistro={() => setPage("registro")}
+          />
+          <main style={s.main}>
+            <Landing
+              onIrALogin={() => setPage("login")}
+              onIrARegistro={() => setPage("registro")}
+            />
+          </main>
+        </div>
+      )
+    }
+
     if (page === "registro") {
       return (
         <div>
-          <SimpleNav onLogoClick={() => setPage("login")} />
+          <SimpleNav onLogoClick={() => setPage("landing")} />
           <main style={s.main}>
             <CrearPerfil onPerfilCreado={handlePerfilCreado} />
             <div style={s.signinPrompt}>
@@ -185,15 +205,22 @@ function MainApp() {
       )
     }
 
+    // LOGIN
     return (
-      <Login
-        onLoginExitoso={handleLoginExitoso}
-        onIrARegistro={() => setPage("registro")}
-        onIrARecuperar={() => setPage("recuperar")}
-      />
+      <div>
+        <SimpleNav onLogoClick={() => setPage("landing")} />
+        <main style={s.main}>
+          <Login
+            onLoginExitoso={handleLoginExitoso}
+            onIrARegistro={() => setPage("registro")}
+            onIrARecuperar={() => setPage("recuperar")}
+          />
+        </main>
+      </div>
     )
   }
 
+  // Con sesión activa
   const navItems = [
     { key: "ver", label: "Perfil", shortcut: "P" },
     { key: "recomendaciones", label: "Vacantes", shortcut: "V" },
@@ -413,7 +440,8 @@ function AdminLogin({ onLogin }) {
 
 function AdminPanel({ onLogout }) {
   const path = window.location.pathname
-  const inicial = path.includes("/entrevistas") ? "entrevistas"
+  const inicial = path.includes("/entrevistas-ia") ? "entrevistas-ia"
+    : path.includes("/entrevistas") ? "entrevistas"
     : path.includes("/postulaciones") ? "postulaciones"
     : path.includes("/vacantes") ? "vacantes" : "dashboard"
   const [adminPage, setAdminPage] = useState(inicial)
@@ -424,6 +452,14 @@ function AdminPanel({ onLogout }) {
     window.history.pushState({}, "", newPath)
   }
 
+  const adminTabs = [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "vacantes", label: "Vacantes" },
+    { key: "postulaciones", label: "Postulaciones" },
+    { key: "entrevistas", label: "Entrevistas" },
+    { key: "entrevistas-ia", label: "Entrevistas con IA", ai: true },
+  ]
+
   return (
     <div>
       <nav style={s.nav}>
@@ -433,46 +469,23 @@ function AdminPanel({ onLogout }) {
             <span style={s.adminBadge}>Admin</span>
           </div>
           <div style={s.navLinks}>
-            <span
-              onClick={() => handleNav("dashboard")}
-              style={{
-                ...s.navLink,
-                color: adminPage === "dashboard" ? "var(--foreground)" : "var(--muted-foreground)",
-                fontWeight: adminPage === "dashboard" ? 500 : 400,
-              }}
-            >
-              Dashboard
-            </span>
-            <span
-              onClick={() => handleNav("vacantes")}
-              style={{
-                ...s.navLink,
-                color: adminPage === "vacantes" ? "var(--foreground)" : "var(--muted-foreground)",
-                fontWeight: adminPage === "vacantes" ? 500 : 400,
-              }}
-            >
-              Vacantes
-            </span>
-            <span
-              onClick={() => handleNav("postulaciones")}
-              style={{
-                ...s.navLink,
-                color: adminPage === "postulaciones" ? "var(--foreground)" : "var(--muted-foreground)",
-                fontWeight: adminPage === "postulaciones" ? 500 : 400,
-              }}
-            >
-              Postulaciones
-            </span>
-            <span
-              onClick={() => handleNav("entrevistas")}
-              style={{
-                ...s.navLink,
-                color: adminPage === "entrevistas" ? "var(--foreground)" : "var(--muted-foreground)",
-                fontWeight: adminPage === "entrevistas" ? 500 : 400,
-              }}
-            >
-              Entrevistas
-            </span>
+            {adminTabs.map((tab) => (
+              <span
+                key={tab.key}
+                onClick={() => handleNav(tab.key)}
+                style={{
+                  ...s.navLink,
+                  color: adminPage === tab.key ? "var(--foreground)" : "var(--muted-foreground)",
+                  fontWeight: adminPage === tab.key ? 500 : 400,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                {tab.ai && <span style={s.aiDot}></span>}
+                {tab.label}
+              </span>
+            ))}
             <span onClick={onLogout} style={{ ...s.navLink, color: "var(--muted-foreground)" }}>
               Cerrar sesión
             </span>
@@ -484,6 +497,7 @@ function AdminPanel({ onLogout }) {
         {adminPage === "vacantes" && <AdminVacantes onVolver={onLogout} />}
         {adminPage === "postulaciones" && <AdminPostulaciones onVolver={onLogout} />}
         {adminPage === "entrevistas" && <AdminEntrevistas onVolver={onLogout} />}
+        {adminPage === "entrevistas-ia" && <AdminEntrevistasIA onVolver={onLogout} />}
       </main>
     </div>
   )
@@ -494,6 +508,36 @@ function SimpleNav({ onLogoClick }) {
     <nav style={s.nav}>
       <div style={s.navInner}>
         <span style={s.logo} onClick={onLogoClick}>JobAgent</span>
+      </div>
+    </nav>
+  )
+}
+
+function LandingNav({ onLogoClick, onIrALogin, onIrARegistro }) {
+  return (
+    <nav style={s.nav}>
+      <div style={s.navInner}>
+        <span style={s.logo} onClick={onLogoClick}>JobAgent</span>
+        <div style={s.navLinks}>
+          <span
+            onClick={onIrALogin}
+            role="link"
+            tabIndex={0}
+            style={{ ...s.navLink, color: "var(--muted-foreground)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--foreground)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted-foreground)")}
+          >
+            Iniciar sesión
+          </span>
+          <button
+            onClick={onIrARegistro}
+            style={s.navBtnPrimary}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+          >
+            Comenzar
+          </button>
+        </div>
       </div>
     </nav>
   )
@@ -539,6 +583,20 @@ const s = {
     letterSpacing: "0.01em",
     transition: "color 0.2s ease",
     userSelect: "none",
+  },
+  navBtnPrimary: {
+    padding: "7px 16px",
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    border: "none",
+    borderRadius: "var(--radius-full)",
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "background 0.2s ease",
+  },
+  aiDot: {
+    fontSize: 10,
   },
   main: {
     paddingTop: 48,

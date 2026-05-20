@@ -25,4 +25,5 @@ class VacanteModel(Base):
     requisitos: Mapped[str | None] = mapped_column(Text, nullable=True)  # skills separados por ;
     url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     estado: Mapped[str] = mapped_column(String(20), default="activa")
+    area: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

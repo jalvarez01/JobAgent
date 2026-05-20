@@ -22,6 +22,11 @@ export async function listarPerfiles() {
   return apiFetch("/perfiles/")
 }
 
+// Lista pública para el panel admin (no requiere JWT de usuario).
+export async function listarPerfilesAdmin() {
+  return apiFetch("/perfiles/admin/listar", {}, false)
+}
+
 export async function analizarCVEstructurado(texto) {
   return apiFetch("/cv/analizar-estructurado", {
     method: "POST",

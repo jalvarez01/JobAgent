@@ -497,3 +497,211 @@ uvicorn backend.main:app --reload
 ---
 
 **Last updated:** April 2026
+
+```
+JobAgent
+├─ README.md
+├─ backend
+│  ├─ __init__.py
+│  ├─ api
+│  │  ├─ __init__.py
+│  │  ├─ auth.py
+│  │  ├─ brechas.py
+│  │  ├─ cv.py
+│  │  ├─ cv_export.py
+│  │  ├─ dashboard.py
+│  │  ├─ entrevistas.py
+│  │  ├─ favoritos.py
+│  │  ├─ notificaciones.py
+│  │  ├─ perfil.py
+│  │  ├─ pipeline.py
+│  │  ├─ postulaciones.py
+│  │  ├─ recuperacion.py
+│  │  ├─ trazabilidad.py
+│  │  └─ vacantes.py
+│  ├─ config.py
+│  ├─ data
+│  ├─ dependencies.py
+│  ├─ dockerfile
+│  ├─ domain
+│  │  ├─ __init__.py
+│  │  ├─ agents
+│  │  │  ├─ __init__.py
+│  │  │  ├─ analizar.py
+│  │  │  ├─ cargar.py
+│  │  │  ├─ perfil_agent.py
+│  │  │  ├─ postulacion_agent.py
+│  │  │  ├─ recomendacion_agent.py
+│  │  │  ├─ seguimiento_agent.py
+│  │  │  ├─ vacantes_agent.py
+│  │  │  └─ vacantes_pdf.py
+│  │  └─ services
+│  │     ├─ __init__.py
+│  │     ├─ brechas_service.py
+│  │     ├─ cv_pdf_service.py
+│  │     ├─ dashboard_service.py
+│  │     ├─ entrevista_service.py
+│  │     ├─ favorito_service.py
+│  │     ├─ notificacion_service.py
+│  │     ├─ password_reset_service.py
+│  │     ├─ perfil_service.py
+│  │     ├─ postulacion_service.py
+│  │     └─ recomendacion_service.py
+│  ├─ graph
+│  │  ├─ __init__.py
+│  │  ├─ builder.py
+│  │  ├─ checkpointer.py
+│  │  ├─ runner.py
+│  │  └─ state.py
+│  ├─ infrastructure
+│  │  ├─ __init__.py
+│  │  ├─ llm
+│  │  │  ├─ __init__.py
+│  │  │  └─ groq_provider.py
+│  │  ├─ loaders
+│  │  │  ├─ __init__.py
+│  │  │  ├─ csv_loader.py
+│  │  │  └─ pdf_loader.py
+│  │  └─ persistence
+│  │     ├─ __init__.py
+│  │     ├─ database.py
+│  │     ├─ models
+│  │     │  ├─ __init__.py
+│  │     │  ├─ entrevista.py
+│  │     │  ├─ favorito.py
+│  │     │  ├─ notificacion.py
+│  │     │  ├─ password_reset_token.py
+│  │     │  ├─ perfil.py
+│  │     │  ├─ postulacion.py
+│  │     │  ├─ skill_aprendizaje.py
+│  │     │  ├─ traza.py
+│  │     │  └─ vacante.py
+│  │     └─ repositories
+│  │        ├─ __init__.py
+│  │        ├─ entrevista_repo.py
+│  │        ├─ favorito_repo.py
+│  │        ├─ notificacion_repo.py
+│  │        ├─ password_reset_repo.py
+│  │        ├─ perfil_repo.py
+│  │        ├─ postulacion_repo.py
+│  │        ├─ skill_aprendizaje_repo.py
+│  │        └─ vacante_repo.py
+│  ├─ main.py
+│  ├─ requirements.txt
+│  ├─ schemas
+│  │  ├─ __init__.py
+│  │  ├─ auth.py
+│  │  ├─ cv.py
+│  │  ├─ entrevista.py
+│  │  ├─ favorito.py
+│  │  ├─ notificacion.py
+│  │  ├─ password_reset.py
+│  │  ├─ postulacion.py
+│  │  ├─ traza.py
+│  │  └─ vacante.py
+│  ├─ security.py
+│  └─ storage
+├─ data
+│  ├─ jobagent.db
+│  ├─ uploads
+│  │  ├─ 079f475776054f02ac0a5acceab6db18_CV_ ESPAÑOL.docx
+│  │  ├─ 0d551c07a6244c949360ae1fa5ef3915_CV_ ESPAÑOL.docx
+│  │  ├─ 10f49e4d17d34073a0e775ad4fe9f2d3_CV_Inglés.pdf
+│  │  ├─ 17495e3d0eda44cb904b2d34942cd4b9_CV_Inglés.pdf
+│  │  ├─ 2c045cffab1142d19b9256097c606569_CV_ ESPAÑOL.docx
+│  │  ├─ 4836761154f5463c8df35b87b5e74917_CV_ ESPAÑOL.docx
+│  │  ├─ 51f6405de9364e63aabc4495850f3c8e_CV_ ESPAÑOL.docx
+│  │  ├─ 6343430051a84422a0e0ba106a90dab9_CV_Inglés.pdf
+│  │  ├─ 687657f33e234506a6af9fe9788448f8_CV_Inglés.pdf
+│  │  ├─ 71e4dac33d5b4adb9538d23f372c5e15_CV_ ESPAÑOL.docx
+│  │  ├─ 85625d7b09d844a1a7c241f5fbf25550_CV_ ESPAÑOL.docx
+│  │  ├─ 8ab85207fa7849d480c3555c39f08402_CV_ ESPAÑOL.docx
+│  │  ├─ b2e9b9cd256b404b97a0da6212ed0ebd_CV_ ESPAÑOL.docx
+│  │  ├─ b6c949afb4074254806a43e99bd6f0f9_CV_Inglés.pdf
+│  │  ├─ b6fc643961744420960e982b6e80585c_CV_ ESPAÑOL.docx
+│  │  └─ c99700c855f64df9ba6bf509bea1773c_CV_ ESPAÑOL.docx
+│  └─ vacantes.csv
+├─ docker-compose.yml
+├─ frontend
+│  ├─ .vite
+│  │  └─ deps
+│  │     ├─ _metadata.json
+│  │     ├─ package.json
+│  │     ├─ react-FLDBkK74.js
+│  │     ├─ react-FLDBkK74.js.map
+│  │     ├─ react-dom_client.js
+│  │     ├─ react-dom_client.js.map
+│  │     ├─ react.js
+│  │     ├─ react_jsx-dev-runtime.js
+│  │     └─ react_jsx-dev-runtime.js.map
+│  ├─ README.md
+│  ├─ dist
+│  │  ├─ assets
+│  │  │  ├─ index-CTQJuQtq.js
+│  │  │  └─ index-nqMpL4T3.css
+│  │  ├─ favicon.png
+│  │  └─ index.html
+│  ├─ dockerfile
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  └─ favicon.png
+│  ├─ src
+│  │  ├─ App.css
+│  │  ├─ App.jsx
+│  │  ├─ api
+│  │  │  ├─ auth.js
+│  │  │  ├─ brechas.js
+│  │  │  ├─ client.js
+│  │  │  ├─ cv.js
+│  │  │  ├─ cvExport.js
+│  │  │  ├─ dashboard.js
+│  │  │  ├─ entrevistas.js
+│  │  │  ├─ favoritos.js
+│  │  │  ├─ notificaciones.js
+│  │  │  ├─ perfil.js
+│  │  │  ├─ postulaciones.js
+│  │  │  ├─ recuperacion.js
+│  │  │  └─ vacantes.js
+│  │  ├─ assets
+│  │  │  ├─ hero.png
+│  │  │  ├─ react.svg
+│  │  │  └─ vite.svg
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  └─ pages
+│  │     ├─ AdminDashboard.jsx
+│  │     ├─ AdminEntrevistas.jsx
+│  │     ├─ AdminPostulaciones.jsx
+│  │     ├─ AdminVacantes.jsx
+│  │     ├─ Ayuda.jsx
+│  │     ├─ Brechas.jsx
+│  │     ├─ BtnExportarCV.jsx
+│  │     ├─ CrearPerfil.jsx
+│  │     ├─ DetalleVacante.jsx
+│  │     ├─ EditarPerfil.jsx
+│  │     ├─ Entrevistas.jsx
+│  │     ├─ Favoritos.jsx
+│  │     ├─ Login.jsx
+│  │     ├─ NotificacionesBell.jsx
+│  │     ├─ PipelineDashboard.jsx
+│  │     ├─ Recomendaciones.jsx
+│  │     ├─ RecuperarPassword.jsx
+│  │     ├─ ResetPassword.jsx
+│  │     ├─ SubirCV.jsx
+│  │     ├─ Tablero.jsx
+│  │     └─ VerPerfil.jsx
+│  └─ vite.config.js
+├─ storage
+│  ├─ analisis_05290bdd72344628b45c44aaa8930452.txt
+│  ├─ analisis_5f8b0f110b1a4b31b0339d64f26e25c6.txt
+│  ├─ analisis_7e2299cfb92f44bd9414602a8a016fe7.txt
+│  └─ analisis_fe037744e00e4845bb2af893c398b8e1.txt
+└─ tests
+   ├─ test_agents
+   ├─ test_api
+   └─ test_services
+
+```

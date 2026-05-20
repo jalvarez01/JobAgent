@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react"
-import { obtenerRecomendaciones, listarVacantes } from "../api/vacantes"
+import { obtenerRecomendaciones, listarVacantes, listarAreas } from "../api/vacantes"
 
-const UBICACIONES = ["", "Bogotá", "Medellín"]
+const UBICACIONES = [
+  "", "Bogotá", "Medellín", "Cali", "Barranquilla",
+  "Bucaramanga", "Cartagena", "Pereira", "Manizales", "Remoto",
+]
+
 const RANGOS_SALARIO = [
   { value: "", label: "Cualquier salario" },
   { value: "0-3000000", label: "Hasta $3M" },
@@ -9,6 +13,25 @@ const RANGOS_SALARIO = [
   { value: "5000000-8000000", label: "$5M - $8M" },
   { value: "8000000-99999999", label: "Más de $8M" },
 ]
+
+const AREA_LABELS = {
+  tecnologia: "Tecnología",
+  salud: "Salud",
+  educacion: "Educación",
+  economia_finanzas: "Economía y Finanzas",
+  derecho: "Derecho",
+  arquitectura: "Arquitectura",
+  ingenierias: "Ingenierías",
+  marketing: "Marketing",
+  diseno: "Diseño",
+  hospitalidad_turismo: "Hospitalidad y Turismo",
+  comunicacion: "Comunicación",
+  ciencias: "Ciencias",
+  recursos_humanos: "Recursos Humanos",
+  trainees_practicas: "Trainees y Prácticas",
+}
+
+const areaLabel = (key) => AREA_LABELS[key] || (key || "").replace(/_/g, " ")
 
 export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
   const [vacantes, setVacantes] = useState([])
@@ -21,22 +44,30 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
   const [filtroModalidad, setFiltroModalidad] = useState("")
   const [filtroUbicacion, setFiltroUbicacion] = useState("")
   const [filtroSalario, setFiltroSalario] = useState("")
+  const [filtroArea, setFiltroArea] = useState("")
+
+  const [areasDisponibles, setAreasDisponibles] = useState([])
+
+  useEffect(() => {
+    listarAreas().then((res) => setAreasDisponibles(res.areas || [])).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (perfil?.id) cargar()
-  }, [perfil?.id, filtroModalidad, filtroUbicacion, modo])
+  }, [perfil?.id, filtroModalidad, filtroUbicacion, filtroArea, modo])
 
   const cargar = async () => {
     setLoading(true); setError("")
     try {
       let data
       if (modo === "busqueda" && busqueda.trim()) {
-        data = await listarVacantes(busqueda.trim())
+        data = await listarVacantes(busqueda.trim(), filtroArea || "")
       } else {
         data = await obtenerRecomendaciones(perfil.id, {
-          limit: 20,
+          limit: 50,
           modalidad: filtroModalidad || undefined,
           ubicacion: filtroUbicacion || undefined,
+          area: filtroArea || undefined,
         })
       }
       setVacantes(data)
@@ -99,6 +130,8 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
     return "Match bajo"
   }
 
+  const hayFiltrosActivos = filtroModalidad || filtroUbicacion || filtroSalario || filtroArea
+
   return (
     <div style={s.container}>
       {/* Hero */}
@@ -122,6 +155,35 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
           </button>
         )}
       </div>
+
+      {/* Píldoras de áreas */}
+      {areasDisponibles.length > 0 && (
+        <div style={s.areasRow} className="animate-slide-up">
+          <button
+            type="button"
+            onClick={() => setFiltroArea("")}
+            style={{
+              ...s.areaPill,
+              ...(filtroArea === "" ? s.areaPillActive : {}),
+            }}
+          >
+            Todas
+          </button>
+          {areasDisponibles.map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setFiltroArea(a)}
+              style={{
+                ...s.areaPill,
+                ...(filtroArea === a ? s.areaPillActive : {}),
+              }}
+            >
+              {areaLabel(a)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Barra de búsqueda */}
       <form onSubmit={handleBuscar} style={s.searchRow} className="animate-slide-up">
@@ -171,9 +233,14 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
           {RANGOS_SALARIO.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
 
-        {(filtroModalidad || filtroUbicacion || filtroSalario) && (
+        {hayFiltrosActivos && (
           <span
-            onClick={() => { setFiltroModalidad(""); setFiltroUbicacion(""); setFiltroSalario("") }}
+            onClick={() => {
+              setFiltroModalidad("")
+              setFiltroUbicacion("")
+              setFiltroSalario("")
+              setFiltroArea("")
+            }}
             style={s.clearLink}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.7)}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
@@ -199,7 +266,7 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
           <p style={s.muted}>
             {modo === "busqueda"
               ? "Intenta con otros términos de búsqueda."
-              : "Agrega más habilidades a tu perfil para mejorar las recomendaciones."}
+              : "Ajusta los filtros o agrega más habilidades a tu perfil."}
           </p>
         </div>
       ) : (
@@ -226,6 +293,7 @@ export default function Recomendaciones({ perfil, onVerDetalle, onVolver }) {
                   <span style={s.empresa}>{v.empresa}</span>
                 </div>
                 <div style={s.metaRow}>
+                  {v.area && <span style={s.metaArea}>{areaLabel(v.area)}</span>}
                   {v.ubicacion && <span style={s.meta}>{v.ubicacion}</span>}
                   {v.modalidad && <span style={s.meta}>{v.modalidad}</span>}
                   {fmt(v.salario_min, v.salario_max) && <span style={s.meta}>{fmt(v.salario_min, v.salario_max)}</span>}
@@ -267,7 +335,7 @@ const s = {
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: 20,
-    marginBottom: 32,
+    marginBottom: 28,
     flexWrap: "wrap",
   },
   title: {
@@ -295,6 +363,28 @@ const s = {
     padding: "12px 16px",
     marginBottom: 16,
     fontSize: 14,
+  },
+  areasRow: {
+    display: "flex",
+    gap: 8,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+  areaPill: {
+    padding: "7px 16px",
+    background: "transparent",
+    color: "var(--muted-foreground)",
+    border: "1px solid var(--border-strong)",
+    borderRadius: "var(--radius-full)",
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.15s",
+  },
+  areaPillActive: {
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    borderColor: "var(--primary)",
   },
   searchRow: {
     display: "flex",
@@ -402,6 +492,14 @@ const s = {
     padding: "3px 10px",
     background: "rgba(0,0,0,0.04)",
     borderRadius: "var(--radius-full)",
+  },
+  metaArea: {
+    fontSize: 12,
+    color: "var(--primary)",
+    background: "var(--accent)",
+    padding: "3px 10px",
+    borderRadius: "var(--radius-full)",
+    fontWeight: 500,
   },
   skillsRow: {
     display: "flex",

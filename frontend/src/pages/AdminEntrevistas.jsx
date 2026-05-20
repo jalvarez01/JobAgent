@@ -3,7 +3,7 @@ import {
   listarTodasEntrevistas, crearEntrevista,
   actualizarEntrevista, eliminarEntrevista,
 } from "../api/entrevistas"
-import { listarPerfiles } from "../api/perfil"
+import { listarPerfilesAdmin } from "../api/perfil"
 import { listarTodasVacantes } from "../api/vacantes"
 
 const TIPOS = [
@@ -46,7 +46,7 @@ export default function AdminEntrevistas({ onVolver }) {
     setLoading(true); setError("")
     try {
       const [ents, pers, vacs] = await Promise.all([
-        listarTodasEntrevistas(), listarPerfiles(), listarTodasVacantes(),
+        listarTodasEntrevistas(), listarPerfilesAdmin(), listarTodasVacantes(),
       ])
       setEntrevistas(ents); setPerfiles(pers); setVacantes(vacs)
     } catch (err) { setError(err.message) }

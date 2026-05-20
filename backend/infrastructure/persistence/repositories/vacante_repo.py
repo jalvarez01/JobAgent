@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 
 from sqlalchemy.orm import Session
-
 from backend.infrastructure.persistence.models.vacante import VacanteModel
 
 
@@ -11,28 +10,30 @@ class VacanteRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self, estado: str = "activa") -> list[VacanteModel]:
-        return (
-            self.db.query(VacanteModel)
-            .filter(VacanteModel.estado == estado)
-            .all()
-        )
+    def get_all(
+        self,
+        estado: str = "activa",
+        area: Optional[str] = None,
+    ) -> list[VacanteModel]:
+        query = self.db.query(VacanteModel).filter(VacanteModel.estado == estado)
+        if area:
+            query = query.filter(VacanteModel.area == area)
+        return query.all()
 
     def get_by_id(self, vacante_id: str) -> Optional[VacanteModel]:
         return self.db.query(VacanteModel).filter(VacanteModel.id == vacante_id).first()
 
-    def search(self, query: str) -> list[VacanteModel]:
+    def search(self, query: str, area: Optional[str] = None) -> list[VacanteModel]:
         pattern = f"%{query.lower()}%"
-        return (
-            self.db.query(VacanteModel)
-            .filter(
-                (VacanteModel.titulo.ilike(pattern))
-                | (VacanteModel.empresa.ilike(pattern))
-                | (VacanteModel.descripcion.ilike(pattern))
-                | (VacanteModel.requisitos.ilike(pattern))
-            )
-            .all()
+        q = self.db.query(VacanteModel).filter(
+            (VacanteModel.titulo.ilike(pattern))
+            | (VacanteModel.empresa.ilike(pattern))
+            | (VacanteModel.descripcion.ilike(pattern))
+            | (VacanteModel.requisitos.ilike(pattern))
         )
+        if area:
+            q = q.filter(VacanteModel.area == area)
+        return q.all()
 
     def count(self) -> int:
         return self.db.query(VacanteModel).count()
@@ -40,6 +41,17 @@ class VacanteRepository:
     def get_all_any_estado(self) -> list[VacanteModel]:
         """Retorna todas las vacantes sin filtrar por estado (para admin)."""
         return self.db.query(VacanteModel).order_by(VacanteModel.created_at.desc()).all()
+
+    def get_areas_disponibles(self) -> list[str]:
+        """Retorna las áreas únicas presentes en la BD."""
+        result = (
+            self.db.query(VacanteModel.area)
+            .filter(VacanteModel.area.isnot(None))
+            .filter(VacanteModel.estado == "activa")
+            .distinct()
+            .all()
+        )
+        return sorted([r[0] for r in result if r[0]])
 
     def create(self, data: dict) -> VacanteModel:
         vacante = VacanteModel(**data)
@@ -91,9 +103,9 @@ class VacanteRepository:
                     requisitos=row.get("requisitos", "").strip() or None,
                     url=row.get("url", "").strip() or None,
                     estado=row.get("estado", "activa").strip(),
+                    area=row.get("area", "").strip() or None,
                 )
                 self.db.add(vacante)
                 count += 1
-
         self.db.commit()
         return count

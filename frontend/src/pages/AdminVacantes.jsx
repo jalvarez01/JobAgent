@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import {
   listarTodasVacantes, crearVacante, actualizarVacante, eliminarVacante,
 } from "../api/vacantes"
+import RankingIAModal from "./RankingIAModal"
 
 const MODALIDADES = [
   { value: "presencial", label: "Presencial" },
@@ -29,6 +30,7 @@ export default function AdminVacantes({ onVolver }) {
   const [error, setError] = useState("")
   const [mensaje, setMensaje] = useState("")
   const [busqueda, setBusqueda] = useState("")
+  const [vacanteRanking, setVacanteRanking] = useState(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -208,6 +210,15 @@ export default function AdminVacantes({ onVolver }) {
                     </div>
                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                       <button
+                        onClick={() => setVacanteRanking(v)}
+                        style={s.btnIA}
+                        title="Top candidatos con IA"
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#0077ed")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+                      >
+                         Mejor candidato
+                      </button>
+                      <button
                         onClick={() => handleEditar(v)}
                         style={s.btnMini}
                         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
@@ -308,6 +319,13 @@ export default function AdminVacantes({ onVolver }) {
             </button>
           </div>
         </form>
+      )}
+
+      {vacanteRanking && (
+        <RankingIAModal
+          vacante={vacanteRanking}
+          onClose={() => setVacanteRanking(null)}
+        />
       )}
     </div>
   )
@@ -454,6 +472,18 @@ const s = {
     padding: "3px 10px",
     fontWeight: 500,
     borderRadius: "var(--radius-full)",
+  },
+  btnIA: {
+    fontSize: 12,
+    fontWeight: 500,
+    padding: "6px 14px",
+    background: "var(--primary)",
+    color: "var(--primary-foreground)",
+    border: "none",
+    borderRadius: "var(--radius-full)",
+    cursor: "pointer",
+    transition: "background 0.2s",
+    whiteSpace: "nowrap",
   },
   btnMini: {
     fontSize: 12,
